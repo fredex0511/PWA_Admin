@@ -1,1 +1,29 @@
-<p>login works!</p>
+<div class="flex h-screen">
+  <div class="w-3/5 bg-gray-200 flex items-center justify-center">
+    <img src="/assets/walk.webp" alt="Login Image" class="w-full h-full object-cover">
+  </div>
+  <div class="w-2/5 flex items-center justify-center">
+    <div class="w-full max-w-md p-8 bg-white shadow-md rounded">
+      <h2 class="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h2>
+      <form>
+        <div class="mb-4">
+          <label for="email" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
+          <input type="email" id="email" name="email" placeholder="Ingresa tu correo" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <div class="mb-4">
+          <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
+          <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <div class="mb-4 text-right">
+          <a href="/forgot-password" class="text-sm text-blue-500 hover:underline">¿Olvidaste tu contraseña?</a>
+        </div>
+        <button type="submit"
+          class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+          Iniciar Sesión
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
