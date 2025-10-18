@@ -1,0 +1,60 @@
+<ion-content class="login-content">
+	<div class="login-container">
+		<!-- Brand Section with Logo -->
+		<div class="brand">
+			<div class="logo-wrapper">
+				<div class="logo-icon">
+					<ion-icon name="shield-checkmark"></ion-icon>
+				</div>
+			</div>
+			<h1 class="brand-title">
+				<span class="title-main">WalkSafe</span>
+				<br>
+				<span class="title-accent">Go safe to your place</span>
+			</h1>
+			<p class="brand-subtitle"></p>
+		</div>
+
+		<!-- Login Form -->
+		<form (ngSubmit)="onSubmit()" #loginForm="ngForm" class="login-form" autocomplete="off">
+			<div class="input-group">
+				<div class="input-item">
+					<div class="input-icon">
+						<ion-icon name="mail-outline"></ion-icon>
+					</div>
+					<input
+						type="email"
+						name="email"
+						required
+						autocomplete="off"
+						[(ngModel)]="model.email"
+						placeholder="Correo electrónico" />
+				</div>
+			</div>
+
+			<div class="input-group">
+				<div class="input-item">
+					<div class="input-icon">
+						<ion-icon name="lock-closed-outline"></ion-icon>
+					</div>
+					<input
+						type="password"
+						name="password"
+						required
+						minlength="6"
+						autocomplete="new-password"
+						[(ngModel)]="model.password"
+						placeholder="Contraseña" />
+				</div>
+			</div>
+
+			<div class="actions">
+				<button type="submit" [disabled]="!loginForm.form.valid" class="btn-primary">
+					<span class="btn-text">Iniciar Sesión</span>
+					<div class="btn-glow"></div>
+					<ion-icon name="arrow-forward-outline" class="btn-icon"></ion-icon>
+				</button>
+			</div>
+		</form>
+	</div>
+</ion-content>
