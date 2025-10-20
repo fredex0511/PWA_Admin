@@ -6,6 +6,7 @@
 	height: 100vh;
 	align-items: center;
 	justify-content: center;
+	z-index: 1;
 }
 
 /* Background Effects */
@@ -16,7 +17,7 @@
 	width: 100%;
 	height: 100%;
 	pointer-events: none;
-	z-index: 0;
+	z-index: 0; /* Asegura que esté detrás del contenido principal */
 }
 
 .gradient-orb {
@@ -81,6 +82,7 @@
 	padding: 30px;
 	position: relative;
 	z-index: 1;
+	margin: 0 auto; /* Center horizontally */
 	margin-top: 15vh;
 
 	
@@ -100,7 +102,7 @@
 		inset 0 1px 0 rgba(255, 255, 255, 0.1);
 	
 	color: #ffffff;
-	/* animation: container-fade-in 1s ease-out; */
+	animation: container-fade-in 1s ease-out;
 }
 
 /* Brand Section */
@@ -352,6 +354,7 @@
 	border-radius: 10px;
 	transition: all 0.3s ease;
 	cursor: pointer;
+	margin-top: 1vh;
 }
 
 .forgot-link:hover {
@@ -388,6 +391,25 @@
 	color: #ffffff !important;
 }
 
+.error-message {
+	color: #ff6b6b;
+	font-size: 14px;
+	margin-top: 4px;
+}
+
+.input-item input:focus {
+	outline: none;
+	border-color: #4A90E2;
+	box-shadow: 0 0 8px rgba(74, 144, 226, 0.5);
+}
+
+.input-item input:invalid {
+	border-color: #ff6b6b;
+}
+
+.input-item input:invalid:focus {
+	box-shadow: 0 0 8px rgba(255, 107, 107, 0.5);
+}
 
 /* Animations */
 @keyframes float {
@@ -403,10 +425,10 @@
 	100% { transform: translateY(-100px) translateX(100px); opacity: 0; }
 }
 
-	/* @keyframes container-fade-in {
-		0% { opacity: 0; transform: translateY(1vh) scale(0.95); }
-		100% { opacity: 1; transform: translateY(15vh) scale(1); }
-	} */
+	@keyframes container-fade-in {
+		0% { opacity: 0; transform: translateY(-10vh) scale(0.95); }
+		100% { opacity: 1; transform: translateY(0vh) scale(1); }
+	}
 
 @keyframes logo-pulse {
 	0%, 100% { transform: scale(1); }

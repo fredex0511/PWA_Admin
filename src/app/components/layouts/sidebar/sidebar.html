@@ -1,0 +1,83 @@
+<div class="sidebar-container">
+  <!-- Logo/Header -->
+  <div class="sidebar-header">
+    <div class="logo">
+      <ion-icon name="shield-checkmark" class="logo-icon"></ion-icon>
+      <h2 class="logo-text">Admin</h2>
+    </div>
+  </div>
+
+  <!-- Navigation Menu -->
+  <nav class="sidebar-nav">
+    <ul class="nav-list">
+      <li class="nav-item" [class.active]="activeSection === 'dashboard'">
+        <a (click)="navigateToSection('dashboard')" class="nav-link">
+          <ion-icon name="home-outline" class="nav-icon"></ion-icon>
+          <span class="nav-text">Dashboard</span>
+        </a>
+      </li>
+      
+      <li class="nav-item" [class.active]="activeSection === 'monitoreadores'">
+        <a (click)="navigateToSection('monitoreadores')" class="nav-link">
+          <ion-icon name="people-outline" class="nav-icon"></ion-icon>
+          <span class="nav-text">Monitoreadores</span>
+        </a>
+      </li>
+      
+      <li class="nav-item" [class.active]="activeSection === 'incidentes'">
+        <a (click)="navigateToSection('incidentes')" class="nav-link">
+          <ion-icon name="warning-outline" class="nav-icon"></ion-icon>
+          <span class="nav-text">Incidentes</span>
+        </a>
+      </li>
+      
+      <li class="nav-item" [class.active]="activeSection === 'zonas-peligrosas'">
+        <a (click)="navigateToSection('zonas-peligrosas')" class="nav-link">
+          <ion-icon name="location-outline" class="nav-icon"></ion-icon>
+          <span class="nav-text">Zonas Peligrosas</span>
+        </a>
+      </li>
+      
+      <li class="nav-item" [class.active]="activeSection === 'caminos'">
+        <a (click)="navigateToSection('caminos')" class="nav-link">
+          <ion-icon name="map-outline" class="nav-icon"></ion-icon>
+          <span class="nav-text">Caminos</span>
+        </a>
+      </li>
+      
+      <li class="nav-item" [class.active]="activeSection === 'reportes'">
+        <a (click)="navigateToSection('reportes')" class="nav-link">
+          <ion-icon name="bar-chart-outline" class="nav-icon"></ion-icon>
+          <span class="nav-text">Reportes</span>
+        </a>
+      </li>
+      
+      <li class="nav-item" [class.active]="activeSection === 'configuracion'">
+        <a (click)="navigateToSection('configuracion')" class="nav-link">
+          <ion-icon name="settings-outline" class="nav-icon"></ion-icon>
+          <span class="nav-text">Configuración</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Footer/User Info -->
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar">
+        <ion-icon name="person" class="avatar-icon"></ion-icon>
+      </div>
+      <div class="user-details">
+        <h4 class="user-name">Administrador</h4>
+        <p class="user-role">Super Admin</p>
+      </div>
+    </div>
+    
+    <div class="logout-section">
+      <a href="#" class="logout-link">
+        <ion-icon name="log-out-outline" class="logout-icon"></ion-icon>
+        <span class="logout-text">Cerrar Sesión</span>
+      </a>
+    </div>
+  </div>
+</div>

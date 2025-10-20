@@ -1,0 +1,90 @@
+<ion-content class="dashboard-content" fullscreen>
+  <!-- Sidebar Navigation -->
+  <app-sidebar (sectionChange)="onSectionChange($event)"></app-sidebar>
+
+  <!-- Main Content Area -->
+  <div class="main-content">
+    <!-- Dashboard Content (Default) -->
+    <div *ngIf="currentSection === 'dashboard'" class="container">
+      <ion-grid>
+        <!-- Top Row: Panels -->
+        <ion-row class="top-row">
+          <ion-col size="12" size-md="6">
+            <ion-card class="panel">
+              <div class="panel-header">Caminos iniciados</div>
+              <ion-card-content class="panel-body">
+                <ion-list>
+                  <ion-item *ngFor="let p of startedPaths" lines="none">
+                    <ion-label>
+                      <h3>{{ p.title }}</h3>
+                      <p>{{ p.subtitle }}</p>
+                    </ion-label>
+                  </ion-item>
+                </ion-list>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+
+          <ion-col size="12" size-md="6">
+            <ion-card class="panel">
+              <div class="panel-header">Incidentes Recientes</div>
+              <ion-card-content class="panel-body">
+                <ion-list>
+                  <ion-item *ngFor="let i of recentIncidents" lines="none">
+                    <ion-label>
+                      <h3>{{ i.title }}</h3>
+                      <p>{{ i.time }}</p>
+                    </ion-label>
+                  </ion-item>
+                </ion-list>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+
+        <ion-row class="bottom-row">
+          <ion-col size="12" size-md="6" class="center-col">
+            <ion-button expand="block" (click)="manageMonitors()" class="action-btn">
+              Gestionar Monitoreadores
+              <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+            </ion-button>
+          </ion-col>
+
+          <ion-col size="12" size-md="6" class="center-col">
+            <ion-button expand="block" (click)="notifyDangerZones()" class="action-btn">
+              Notificar Zonas Peligrosas
+              <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+
+    <!-- Monitoreadores Section -->
+    <app-monitoreadores *ngIf="currentSection === 'monitoreadores'"></app-monitoreadores>
+
+    <!-- Incidentes Section -->
+    <app-incidentes *ngIf="currentSection === 'incidentes'"></app-incidentes>
+
+    <!-- Placeholder para otras secciones -->
+    <div *ngIf="currentSection === 'zonas-peligrosas'" class="placeholder-section">
+      <h2>Zonas Peligrosas</h2>
+      <p>Esta sección está en desarrollo...</p>
+    </div>
+
+    <div *ngIf="currentSection === 'caminos'" class="placeholder-section">
+      <h2>Gestión de Caminos</h2>
+      <p>Esta sección está en desarrollo...</p>
+    </div>
+
+    <div *ngIf="currentSection === 'reportes'" class="placeholder-section">
+      <h2>Centro de Reportes</h2>
+      <p>Esta sección está en desarrollo...</p>
+    </div>
+
+    <div *ngIf="currentSection === 'configuracion'" class="placeholder-section">
+      <h2>Configuración del Sistema</h2>
+      <p>Esta sección está en desarrollo...</p>
+    </div>
+  </div>
+</ion-content>

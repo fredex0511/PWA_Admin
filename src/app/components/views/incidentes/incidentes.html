@@ -1,0 +1,81 @@
+<div class="incidentes-container">
+  <div class="page-header">
+    <h1>Centro de Incidentes</h1>
+    <p>Monitorea y gestiona todos los incidentes reportados</p>
+  </div>
+
+  <div class="stats-cards">
+    <ion-card class="stat-card">
+      <ion-card-content>
+        <div class="stat-content">
+          <ion-icon name="warning" class="stat-icon danger"></ion-icon>
+          <div class="stat-info">
+            <h3>2</h3>
+            <p>Alta Prioridad</p>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="stat-card">
+      <ion-card-content>
+        <div class="stat-content">
+          <ion-icon name="alert-circle" class="stat-icon warning"></ion-icon>
+          <div class="stat-info">
+            <h3>1</h3>
+            <p>Media Prioridad</p>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="stat-card">
+      <ion-card-content>
+        <div class="stat-content">
+          <ion-icon name="checkmark-circle" class="stat-icon success"></ion-icon>
+          <div class="stat-info">
+            <h3>1</h3>
+            <p>Resueltos Hoy</p>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div class="incidents-list">
+    <ion-card *ngFor="let incident of incidentes" class="incident-card">
+      <ion-card-header>
+        <div class="incident-header">
+          <div class="incident-title">
+            <h3>{{ incident.title }}</h3>
+            <ion-badge [color]="getSeverityColor(incident.severity)">{{ incident.severity }}</ion-badge>
+          </div>
+          <div class="incident-time">{{ incident.time }}</div>
+        </div>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <p class="incident-description">{{ incident.description }}</p>
+        <div class="incident-footer">
+          <div class="status-container">
+            <span class="status-label">Estado:</span>
+            <ion-chip [class]="'status-' + incident.status.toLowerCase()">
+              {{ incident.status }}
+            </ion-chip>
+          </div>
+          <div class="incident-actions">
+            <ion-button fill="clear" size="small">
+              <ion-icon name="eye-outline"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" size="small">
+              <ion-icon name="create-outline"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" size="small" color="success">
+              <ion-icon name="checkmark-outline"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</div>

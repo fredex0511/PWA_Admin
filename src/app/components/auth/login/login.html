@@ -1,9 +1,14 @@
 <ion-content class="login-content">
+	<div class="bg-effects">
+		<div class="gradient-orb orb-1"></div>
+		<div class="gradient-orb orb-2"></div>
+		<div class="gradient-orb orb-3"></div>
+	</div>
 	<div class="login-container">
 		<!-- Brand Section with Logo -->
 		<div class="brand">
 			<div class="logo-wrapper">
-				<div class="logo-icon">
+				<div class="logo-icon" aria-label="Logo">
 					<ion-icon name="shield-checkmark"></ion-icon>
 				</div>
 			</div>
@@ -16,7 +21,7 @@
 		</div>
 
 		<!-- Login Form -->
-		<form (ngSubmit)="onSubmit()" #loginForm="ngForm" class="login-form" autocomplete="off">
+		<form (ngSubmit)="onSubmit()" #loginForm="ngForm" class="login-form" autocomplete="off" novalidate>
 			<div class="input-group">
 				<div class="input-item">
 					<div class="input-icon">
@@ -26,9 +31,12 @@
 						type="email"
 						name="email"
 						required
-						autocomplete="off"
+						aria-label="Correo Electrónico"
 						[(ngModel)]="model.email"
 						placeholder="Correo electrónico" />
+				</div>
+				<div *ngIf="loginForm.submitted && !model.email" class="error-message">
+					Por favor, ingresa un correo electrónico válido.
 				</div>
 			</div>
 
@@ -42,9 +50,12 @@
 						name="password"
 						required
 						minlength="6"
-						autocomplete="new-password"
+						aria-label="Contraseña"
 						[(ngModel)]="model.password"
 						placeholder="Contraseña" />
+				</div>
+				<div *ngIf="loginForm.submitted && !model.password" class="error-message">
+					La contraseña debe tener al menos 6 caracteres.
 				</div>
 			</div>
 
@@ -56,5 +67,9 @@
 				</button>
 			</div>
 		</form>
+
+		<div class="forgot-link">
+			<p>¿No tienes una cuenta? <a routerLink="/register">Regístrate</a></p>
+		</div>
 	</div>
 </ion-content>

@@ -1,0 +1,51 @@
+<div class="monitoreadores-container">
+  <div class="page-header">
+    <h1>Gestión de Monitoreadores</h1>
+    <p>Administra y supervisa todos los monitoreadores activos</p>
+  </div>
+
+  <div class="actions-bar">
+    <ion-button class="add-btn">
+      <ion-icon name="add" slot="start"></ion-icon>
+      Agregar Monitoreador
+    </ion-button>
+    
+    <ion-searchbar placeholder="Buscar monitoreadores..."></ion-searchbar>
+  </div>
+
+  <div class="monitoreadores-grid">
+    <ion-card *ngFor="let monitor of monitoreadores" class="monitor-card">
+      <ion-card-header>
+        <div class="monitor-header">
+          <div class="monitor-avatar">
+            <ion-icon name="person"></ion-icon>
+          </div>
+          <div class="monitor-info">
+            <h3>{{ monitor.name }}</h3>
+            <p class="location">{{ monitor.location }}</p>
+          </div>
+          <div class="status-badge" [class.active]="monitor.status === 'Activo'">
+            {{ monitor.status }}
+          </div>
+        </div>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <div class="monitor-actions">
+          <ion-button fill="clear" size="small">
+            <ion-icon name="eye-outline"></ion-icon>
+            Ver Detalle
+          </ion-button>
+          <ion-button fill="clear" size="small">
+            <ion-icon name="create-outline"></ion-icon>
+            Editar
+          </ion-button>
+          <ion-button fill="clear" size="small" color="danger">
+            <ion-icon name="trash-outline"></ion-icon>
+            Eliminar
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</div>
