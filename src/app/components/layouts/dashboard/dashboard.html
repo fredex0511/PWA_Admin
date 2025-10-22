@@ -66,16 +66,10 @@
     <!-- Incidentes Section -->
     <app-incidentes *ngIf="currentSection === 'incidentes'"></app-incidentes>
 
-    <!-- Placeholder para otras secciones -->
-    <div *ngIf="currentSection === 'zonas-peligrosas'" class="placeholder-section">
-      <h2>Zonas Peligrosas</h2>
-      <p>Esta sección está en desarrollo...</p>
-    </div>
+    <!-- Zonas Peligrosas Section -->
+    <app-zonas-peligrosas *ngIf="currentSection === 'zonas-peligrosas'"></app-zonas-peligrosas>
 
-    <div *ngIf="currentSection === 'caminos'" class="placeholder-section">
-      <h2>Gestión de Caminos</h2>
-      <p>Esta sección está en desarrollo...</p>
-    </div>
+    <app-caminos *ngIf="currentSection === 'caminos'"></app-caminos>
 
     <div *ngIf="currentSection === 'reportes'" class="placeholder-section">
       <h2>Centro de Reportes</h2>

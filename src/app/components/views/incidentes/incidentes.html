@@ -4,7 +4,7 @@
     <p>Monitorea y gestiona todos los incidentes reportados</p>
   </div>
 
-  <div class="stats-cards">
+  <!-- <div class="stats-cards">
     <ion-card class="stat-card">
       <ion-card-content>
         <div class="stat-content">
@@ -40,7 +40,7 @@
         </div>
       </ion-card-content>
     </ion-card>
-  </div>
+  </div> -->
 
   <div class="incidents-list">
     <ion-card *ngFor="let incident of incidentes" class="incident-card">
@@ -48,8 +48,9 @@
         <div class="incident-header">
           <div class="incident-title">
             <h3>{{ incident.title }}</h3>
-            <ion-badge [color]="getSeverityColor(incident.severity)">{{ incident.severity }}</ion-badge>
+            <!-- <ion-badge [color]="getSeverityColor(incident.severity)">{{ incident.severity }}</ion-badge> -->
           </div>
+          
           <div class="incident-time">{{ incident.time }}</div>
         </div>
       </ion-card-header>
@@ -57,13 +58,13 @@
       <ion-card-content>
         <p class="incident-description">{{ incident.description }}</p>
         <div class="incident-footer">
-          <div class="status-container">
+          <!-- <div class="status-container">
             <span class="status-label">Estado:</span>
             <ion-chip [class]="'status-' + incident.status.toLowerCase()">
               {{ incident.status }}
             </ion-chip>
-          </div>
-          <div class="incident-actions">
+          </div> -->
+          <!-- <div class="incident-actions">
             <ion-button fill="clear" size="small">
               <ion-icon name="eye-outline"></ion-icon>
             </ion-button>
@@ -73,7 +74,7 @@
             <ion-button fill="clear" size="small" color="success">
               <ion-icon name="checkmark-outline"></ion-icon>
             </ion-button>
-          </div>
+          </div> -->
         </div>
       </ion-card-content>
     </ion-card>

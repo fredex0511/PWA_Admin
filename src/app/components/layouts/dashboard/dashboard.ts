@@ -4,10 +4,12 @@ import { CommonModule } from '@angular/common';
 import { Sidebar } from '../sidebar/sidebar';
 import { Monitoreadores } from '../../views/monitoreadores/monitoreadores';
 import { Incidentes } from '../../views/incidentes/incidentes';
+import { Caminos } from '../../views/caminos/caminos';
+import { ZonasPeligrosas } from '../../views/zonas-peligrosas/zonas-peligrosas';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [IonicModule, CommonModule, Sidebar, Monitoreadores, Incidentes], 
+  imports: [IonicModule, CommonModule, Sidebar, Monitoreadores, Incidentes, Caminos, ZonasPeligrosas], 
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
