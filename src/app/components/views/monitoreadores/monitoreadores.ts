@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-monitoreadores',
-  imports: [IonicModule],
+  imports: [IonicModule, CommonModule],
   templateUrl: './monitoreadores.html',
   styleUrl: './monitoreadores.css'
 })

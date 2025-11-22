@@ -71,9 +71,6 @@
         <ion-button fill="clear" size="small" (click)="refreshLocation()">
           <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
         </ion-button>
-        <ion-button fill="clear" size="small" (click)="toggleFullscreen()">
-          <ion-icon name="expand-outline" slot="icon-only"></ion-icon>
-        </ion-button>
       </div>
     </div>
     
@@ -98,15 +95,8 @@
         </div>
         
         <div *ngIf="selectedRoute" class="map-content">
-          <!-- Aquí se renderizará el mapa real -->
-          <div class="mock-map">
-            <div class="map-marker" 
-                 [style.left.%]="selectedRoute.mapPosition.x" 
-                 [style.top.%]="selectedRoute.mapPosition.y">
-              <ion-icon name="person" class="marker-icon"></ion-icon>
-            </div>
-            <div class="map-path"></div>
-          </div>
+          <!-- Google Map mount point for live route -->
+          <div id="liveGmap" class="gmap"></div>
           
           <!-- Map overlay with route info -->
           <div class="map-overlay">

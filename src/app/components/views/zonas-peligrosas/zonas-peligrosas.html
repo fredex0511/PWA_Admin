@@ -29,110 +29,16 @@
         <ion-button fill="clear" size="small" (click)="refreshMap()">
           <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
         </ion-button>
-        <ion-button fill="clear" size="small" (click)="toggleLegend()">
-          <ion-icon name="information-circle-outline" slot="icon-only"></ion-icon>
-        </ion-button>
-        <ion-button fill="clear" size="small" (click)="centerMap()">
-          <ion-icon name="locate-outline" slot="icon-only"></ion-icon>
-        </ion-button>
       </div>
     </div>
 
     <!-- Map View -->
     <div class="map-view" id="dangerZonesMap">
       <div class="map-content">
-        <!-- Mock Map Background -->
-        <div class="map-background"></div>
-        
-        <!-- Danger Zone Circles -->
-        <div *ngFor="let zone of dangerZones; trackBy: trackByZoneId" 
-             class="danger-zone-circle"
-             [style.left.%]="zone.position.x"
-             [style.top.%]="zone.position.y"
-             [style.width.px]="getZoneRadius(zone.severity)"
-             [style.height.px]="getZoneRadius(zone.severity)"
-             [class]="'severity-' + zone.severity"
-             (click)="selectZone(zone)"
-             [class.selected]="selectedZone?.id === zone.id">
-          
-          <!-- Zone Center Marker -->
-          <div class="zone-marker">
-            <ion-icon name="warning" class="marker-icon"></ion-icon>
-          </div>
-          
-          <!-- Zone Radius Indicator -->
-          <div class="radius-indicator">
-            <span>{{ zone.radius }}m</span>
-          </div>
-        </div>
+        <!-- Google Map mount point -->
+        <div id="gmap" class="gmap"></div>
 
-        <!-- Selected Zone Details -->
-        <div *ngIf="selectedZone" class="zone-details-overlay">
-          <div class="zone-details-card">
-            <div class="details-header">
-              <div class="zone-info">
-                <h3>{{ selectedZone.name }}</h3>
-                <p class="zone-description">{{ selectedZone.description }}</p>
-              </div>
-              <div class="severity-badge">
-                <ion-badge [color]="getSeverityColor(selectedZone.severity)">
-                  {{ getSeverityLabel(selectedZone.severity) }}
-                </ion-badge>
-              </div>
-            </div>
-            
-            <div class="details-content">
-              <div class="detail-row">
-                <ion-icon name="location-outline"></ion-icon>
-                <span>{{ selectedZone.location }}</span>
-              </div>
-              <div class="detail-row">
-                <ion-icon name="time-outline"></ion-icon>
-                <span>Detectada: {{ formatDate(selectedZone.detectedAt) }}</span>
-              </div>
-              <div class="detail-row">
-                <ion-icon name="alert-circle-outline"></ion-icon>
-                <span>{{ selectedZone.incidentCount }} incidentes reportados</span>
-              </div>
-              <div class="detail-row">
-                <ion-icon name="resize-outline"></ion-icon>
-                <span>Radio de seguridad: {{ selectedZone.radius }}m</span>
-              </div>
-            </div>
-
-            <button class="close-details" (click)="clearSelection()">
-              <ion-icon name="close-outline"></ion-icon>
-            </button>
-          </div>
-        </div>
-
-        <!-- Map Legend -->
-        <div class="map-legend" [class.visible]="showLegend">
-          <div class="legend-header">
-            <h4>Leyenda</h4>
-            <button (click)="toggleLegend()">
-              <ion-icon name="close-outline"></ion-icon>
-            </button>
-          </div>
-          <div class="legend-items">
-            <div class="legend-item">
-              <div class="legend-color severity-low"></div>
-              <span>Riesgo Bajo</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color severity-medium"></div>
-              <span>Riesgo Medio</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color severity-high"></div>
-              <span>Riesgo Alto</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color severity-critical"></div>
-              <span>Riesgo Crítico</span>
-            </div>
-          </div>
-        </div>
+        <!-- details overlay removed: zones will not show the persistent detail card -->
       </div>
     </div>
 

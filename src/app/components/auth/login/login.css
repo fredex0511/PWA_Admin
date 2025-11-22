@@ -3,9 +3,12 @@
 	--background: radial-gradient(ellipse at top, #0B0E14 0%, #000000 70%);
 	background: radial-gradient(ellipse at top, #0B0E14 0%, #000000 70%);
 	display: flex;
-	height: 100vh;
+	min-height: 100vh;
 	align-items: center;
 	justify-content: center;
+	padding-top: env(safe-area-inset-top);
+	padding-bottom: env(safe-area-inset-bottom);
+	box-sizing: border-box;
 	z-index: 1;
 }
 
@@ -78,12 +81,13 @@
 
 /* Main Container */
 .login-container {
-	max-width: 30rem;
+	max-width: 420px;
+	width: 100%;
 	padding: 30px;
 	position: relative;
 	z-index: 1;
 	margin: 0 auto; /* Center horizontally */
-	margin-top: 15vh;
+	margin-top: 0; /* centered by parent flex */
 
 	
 	
@@ -207,7 +211,7 @@
 	backdrop-filter: blur(10px);
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 	overflow: hidden;
-	min-height: 48px;
+	min-height: 56px;
 	transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
@@ -226,9 +230,10 @@
 	border: none;
 	outline: none;
 	color: #ffffff;
-	font-size: 15px;
-	padding: 16px 18px 16px 52px;
+	font-size: 16px;
+	padding: 18px 18px 18px 56px;
 	font-family: inherit;
+	-webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
 .input-item input::placeholder {
@@ -281,23 +286,24 @@
 	background: linear-gradient(135deg, #92BEE0 0%, #4A90E2 100%);
 	color: #000000;
 	border: none;
-	padding: 14px 24px;
+	padding: 16px 26px;
 	border-radius: 12px;
-	font-weight: 600;
-	font-size: 15px;
+	font-weight: 700;
+	font-size: 16px;
 	cursor: pointer;
 	overflow: hidden;
-	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.24s ease;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	gap: 10px;
-	box-shadow: 0 10px 25px rgba(146, 190, 224, 0.3);
+	gap: 12px;
+	box-shadow: 0 12px 30px rgba(146, 190, 224, 0.28);
+	touch-action: manipulation;
 }
 
 .btn-primary:hover:not([disabled]) {
 	transform: translateY(-3px);
-	box-shadow: 0 15px 35px rgba(146, 190, 224, 0.4);
+	box-shadow: 0 18px 40px rgba(146, 190, 224, 0.36);
 }
 
 .btn-primary:active:not([disabled]) {
@@ -443,9 +449,9 @@
 /* Responsive Design */
 @media (max-width: 480px) {
 	.login-container {
-		margin: 4vh 16px;
-		padding: 24px 20px;
-		max-width: none;
+		margin: 4vh 12px;
+		padding: 20px 16px;
+		max-width: calc(100% - 32px);
 	}
 	
 	.brand-title {
@@ -463,12 +469,12 @@
 	}
 	
 	.input-item {
-		min-height: 44px;
+		min-height: 52px;
 	}
 	
 	.input-item input {
-		padding: 12px 14px 12px 45px;
-		font-size: 14px;
+		padding: 14px 14px 14px 48px;
+		font-size: 15px;
 	}
 	
 	.input-icon {
@@ -477,8 +483,8 @@
 	}
 	
 	.btn-primary {
-		padding: 12px 20px;
-		font-size: 14px;
+		padding: 14px 20px;
+		font-size: 15px;
 	}
 	
 	.login-form {
@@ -488,6 +494,19 @@
 	.actions {
 		gap: 14px;
 	}
+}
+
+/* Additional responsive breakpoint for tablets */
+@media (max-width: 768px) {
+	.login-container { max-width: 520px; padding: 24px; }
+	.brand-title { font-size: 22px; }
+	.btn-primary { font-size: 15px; padding: 14px 22px; }
+}
+
+/* Accessibility: show clear focus outlines when keyboard navigating */
+input:focus-visible {
+	outline: 3px solid rgba(146,190,224,0.14);
+	outline-offset: 2px;
 }
 
 @media (max-height: 700px) {
@@ -508,3 +527,106 @@
 		margin-bottom: 12px;
 	}
 }
+
+/* Mobile App Download Banner */
+.mobile-banner {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	background: linear-gradient(135deg, #92BEE0 0%, #4A90E2 100%);
+	padding: 12px 16px;
+	z-index: 100;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+	padding-top: calc(12px + env(safe-area-inset-top));
+}
+
+.banner-content {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	max-width: 100%;
+}
+
+.banner-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 24px;
+	color: #fff;
+	flex-shrink: 0;
+}
+
+.banner-text {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.banner-text h3 {
+	margin: 0;
+	font-size: 14px;
+	font-weight: 700;
+	color: #fff;
+}
+
+.banner-text p {
+	margin: 0;
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.9);
+}
+
+.banner-button {
+	background: rgba(255, 255, 255, 0.25);
+	border: none;
+	border-radius: 8px;
+	padding: 8px 12px;
+	color: #fff;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 18px;
+	flex-shrink: 0;
+	transition: all 0.3s ease;
+}
+
+.banner-button:hover {
+	background: rgba(255, 255, 255, 0.35);
+	transform: translateX(2px);
+}
+
+.banner-button:active {
+	transform: translateX(0);
+}
+
+/* Adjust login container to account for banner */
+.login-content {
+	padding-top: calc(56px + env(safe-area-inset-top));
+}
+
+@media (max-width: 480px) {
+	.mobile-banner {
+		padding: 10px 12px;
+	}
+
+	.banner-content {
+		gap: 8px;
+	}
+
+	.banner-text h3 {
+		font-size: 13px;
+	}
+
+	.banner-text p {
+		font-size: 11px;
+	}
+
+	.banner-button {
+		padding: 6px 10px;
+		font-size: 16px;
+	}
+}
+

@@ -4,6 +4,23 @@
 		<div class="gradient-orb orb-2"></div>
 		<div class="gradient-orb orb-3"></div>
 	</div>
+
+	<!-- Mobile App Download Banner (only visible on mobile web) -->
+	<div *ngIf="isMobileWeb" class="mobile-banner">
+		<div class="banner-content">
+			<div class="banner-icon">
+				<ion-icon name="download-outline"></ion-icon>
+			</div>
+			<div class="banner-text">
+				<h3>Descarga la App</h3>
+				<p>Acceso más rápido y funciones mejoradas</p>
+			</div>
+			<button class="banner-button" (click)="openAppStore()">
+				<ion-icon name="arrow-forward-outline"></ion-icon>
+			</button>
+		</div>
+	</div>
+
 	<div class="login-container">
 		<!-- Brand Section with Logo -->
 		<div class="brand">
@@ -69,7 +86,7 @@
 		</form>
 
 		<div class="forgot-link">
-			<p>¿No tienes una cuenta? <a routerLink="/register">Regístrate</a></p>
+			<p>¿No tienes una cuenta? <a href="#" (click)="goToRegister(); $event.preventDefault()">Regístrate</a></p>
 		</div>
 	</div>
 </ion-content>

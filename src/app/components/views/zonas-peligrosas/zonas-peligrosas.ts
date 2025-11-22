@@ -36,6 +36,9 @@ interface DangerZone {
   incidents: Incident[];
 }
 
+// Ensure Window has a google property at runtime; avoid declaring global `google` to prevent redeclaration errors.
+declare global { interface Window { google: any; } }
+
 @Component({
   selector: 'app-zonas-peligrosas',
   imports: [CommonModule, IonicModule],
@@ -47,6 +50,11 @@ export class ZonasPeligrosas implements OnInit, OnDestroy {
   selectedZone: DangerZone | null = null;
   showLegend: boolean = false;
   totalIncidents: number = 0;
+  // Google Maps objects
+  private map: any = null;
+  private markers: any[] = [];
+  private circles: any[] = [];
+  private mapsLoaded = false;
   
   // Map configuration
   private readonly SAFETY_RADIUS = 50; // 50 meters
@@ -62,6 +70,12 @@ export class ZonasPeligrosas implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadIncidentsData();
     this.calculateDangerZones();
+    this.loadGoogleMapsSdk()
+      .then(() => {
+        this.mapsLoaded = true;
+        setTimeout(() => this.initMap(), 0);
+      })
+      .catch(err => console.error('Error loading Google Maps SDK', err));
   }
 
   ngOnDestroy() {
@@ -316,6 +330,7 @@ export class ZonasPeligrosas implements OnInit, OnDestroy {
   refreshMap() {
     console.log('Actualizando mapa...');
     this.calculateDangerZones();
+    if (this.mapsLoaded) this.renderZonesOnMap();
   }
 
   toggleLegend() {
@@ -325,6 +340,111 @@ export class ZonasPeligrosas implements OnInit, OnDestroy {
   centerMap() {
     console.log('Centrando mapa...');
     this.clearSelection();
+    if (this.map && this.dangerZones.length > 0) {
+      const g = (window as any).google;
+      const bounds = new g.maps.LatLngBounds();
+      this.dangerZones.forEach(z => bounds.extend(new g.maps.LatLng(z.coordinates.lat, z.coordinates.lng)));
+      this.map.fitBounds(bounds);
+    }
+  }
+
+  // Google Maps helpers
+  private loadGoogleMapsSdk(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if ((window as any).google && (window as any).google.maps) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyD8RuH6sdDdoFwNygqmE8Osx0Uz9urpNM0&libraries=places';
+      script.defer = true;
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = (err) => reject(err);
+      document.head.appendChild(script);
+    });
+  }
+
+  private initMap() {
+    if (!(window as any).google || !(window as any).google.maps) {
+      console.error('Google Maps SDK not available');
+      return;
+    }
+
+    const g = (window as any).google;
+    const center = { lat: -34.6025, lng: -58.3795 };
+    this.map = new g.maps.Map(document.getElementById('gmap') as HTMLElement, {
+      center,
+      zoom: 15,
+      styles: [
+        { elementType: 'geometry', stylers: [{ color: '#1a1a1a' }] },
+        { elementType: 'labels.text.fill', stylers: [{ color: '#ffffff' }] },
+        { elementType: 'labels.text.stroke', stylers: [{ color: '#000000' }] },
+        { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#2d2d2d' }] }
+      ],
+      disableDefaultUI: true
+    });
+
+    this.renderZonesOnMap();
+    // When user clicks on the map (not on a marker/circle), clear any selected zone/dialog
+    this.map.addListener('click', (e: any) => {
+      this.clearSelection();
+    });
+  }
+
+  private renderZonesOnMap() {
+    if (!this.map) return;
+
+    // Clear previous markers and circles
+    this.markers.forEach(m => m.setMap(null));
+    this.circles.forEach(c => c.setMap(null));
+    this.markers = [];
+    this.circles = [];
+
+    this.dangerZones.forEach(zone => {
+      // Marker
+      const g = (window as any).google;
+      const marker = new g.maps.Marker({
+        position: { lat: zone.coordinates.lat, lng: zone.coordinates.lng },
+        map: this.map!,
+        title: zone.name,
+        icon: {
+          path: g.maps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: '#ff6b35',
+          fillOpacity: 1,
+          strokeColor: '#92BEE0',
+          strokeWeight: 2
+        }
+      });
+
+      marker.addListener('click', () => this.selectZone(zone));
+      this.markers.push(marker);
+
+      // Circle (50m radius)
+      const circle = new g.maps.Circle({
+        strokeColor: '#ff0000',
+        strokeOpacity: 0.6,
+        strokeWeight: 2,
+        fillColor: '#ff0000',
+        fillOpacity: 0.18,
+        map: this.map!,
+        center: { lat: zone.coordinates.lat, lng: zone.coordinates.lng },
+        radius: zone.radius // meters
+      });
+
+      circle.addListener('click', (ev: any) => this.selectZone(zone));
+      this.circles.push(circle);
+    });
+
+    // Fit to bounds
+    if (this.dangerZones.length > 0) {
+      const g = (window as any).google;
+      const bounds = new g.maps.LatLngBounds();
+      this.dangerZones.forEach(z => bounds.extend(new g.maps.LatLng(z.coordinates.lat, z.coordinates.lng)));
+      this.map.fitBounds(bounds);
+    }
   }
 
   // Notification methods

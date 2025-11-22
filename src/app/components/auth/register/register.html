@@ -1,1 +1,111 @@
-<p>register works!</p>
+<ion-content class="login-content">
+	<div class="bg-effects">
+		<div class="gradient-orb orb-1"></div>
+		<div class="gradient-orb orb-2"></div>
+		<div class="gradient-orb orb-3"></div>
+	</div>
+	<div class="login-container">
+		<div class="brand">
+			<div class="logo-wrapper">
+				<div class="logo-icon" aria-label="Logo">
+					<ion-icon name="shield-checkmark"></ion-icon>
+				</div>
+			</div>
+			<h1 class="brand-title">
+				<span class="title-main">WalkSafe</span>
+				<br>
+				<span class="title-accent">Crea tu cuenta</span>
+			</h1>
+			<p class="brand-subtitle">Regístrate para empezar a proteger tus rutas</p>
+		</div>
+
+		<form (ngSubmit)="onSubmit()" #registerForm="ngForm" class="login-form" autocomplete="off" novalidate>
+			<div class="input-group">
+				<div class="input-item">
+					<div class="input-icon">
+						<ion-icon name="person-outline"></ion-icon>
+					</div>
+					<input
+						type="text"
+						name="name"
+						required
+						aria-label="Nombre completo"
+						[(ngModel)]="model.name"
+						placeholder="Nombre completo" />
+				</div>
+				<div *ngIf="registerForm.submitted && !model.name" class="error-message">
+					Por favor, ingresa tu nombre.
+				</div>
+			</div>
+
+			<div class="input-group">
+				<div class="input-item">
+					<div class="input-icon">
+						<ion-icon name="mail-outline"></ion-icon>
+					</div>
+					<input
+						type="email"
+						name="email"
+						required
+						aria-label="Correo Electrónico"
+						[(ngModel)]="model.email"
+						placeholder="Correo electrónico" />
+				</div>
+				<div *ngIf="registerForm.submitted && !model.email" class="error-message">
+					Por favor, ingresa un correo electrónico válido.
+				</div>
+			</div>
+
+			<div class="input-group">
+				<div class="input-item">
+					<div class="input-icon">
+						<ion-icon name="lock-closed-outline"></ion-icon>
+					</div>
+					<input
+						type="password"
+						name="password"
+						required
+						minlength="6"
+						aria-label="Contraseña"
+						[(ngModel)]="model.password"
+						placeholder="Contraseña" />
+				</div>
+				<div *ngIf="registerForm.submitted && !model.password" class="error-message">
+					La contraseña debe tener al menos 6 caracteres.
+				</div>
+			</div>
+
+			<div class="input-group">
+				<div class="input-item">
+					<div class="input-icon">
+						<ion-icon name="lock-closed"></ion-icon>
+					</div>
+					<input
+						type="password"
+						name="confirmPassword"
+						required
+						minlength="6"
+						aria-label="Confirmar contraseña"
+						[(ngModel)]="model.confirmPassword"
+						placeholder="Confirmar contraseña" />
+				</div>
+				<div *ngIf="registerForm.submitted && model.password !== model.confirmPassword" class="error-message">
+					Las contraseñas no coinciden.
+				</div>
+			</div>
+
+			<div class="actions">
+				<button type="submit" [disabled]="!registerForm.form.valid || model.password !== model.confirmPassword" class="btn-primary">
+					<span class="btn-text">Crear cuenta</span>
+					<div class="btn-glow"></div>
+					<ion-icon name="checkmark-done-outline" class="btn-icon"></ion-icon>
+				</button>
+			</div>
+		</form>
+
+		<div class="forgot-link">
+			<p>¿Ya tienes una cuenta? <a href="#" (click)="goToLogin(); $event.preventDefault()">Inicia sesión</a></p>
+		</div>
+
+	</div>
+</ion-content>

@@ -138,15 +138,21 @@
   position: relative;
 }
 
-.map-background {
+
+/* Google Map container */
+#gmap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-  background-image: 
-    radial-gradient(circle at 25% 25%, rgba(146, 190, 224, 0.05) 2px, transparent 2px),
-    radial-gradient(circle at 75% 75%, rgba(146, 190, 224, 0.05) 2px, transparent 2px);
-  background-size: 40px 40px;
-  position: relative;
+  z-index: 1;
+}
+
+.map-background {
+  display: none; /* kept for fallback, but use real Google Map */
 }
 
 /* Danger Zone Circles */

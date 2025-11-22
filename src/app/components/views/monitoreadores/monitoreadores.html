@@ -1,7 +1,6 @@
 <div class="monitoreadores-container">
   <div class="page-header">
     <h1>Gestión de Monitoreadores</h1>
-    <p>Administra y supervisa todos los monitoreadores activos</p>
   </div>
 
   <div class="actions-bar">
@@ -17,9 +16,6 @@
     <ion-card *ngFor="let monitor of monitoreadores" class="monitor-card">
       <ion-card-header>
         <div class="monitor-header">
-          <div class="monitor-avatar">
-            <ion-icon name="person"></ion-icon>
-          </div>
           <div class="monitor-info">
             <h3>{{ monitor.name }}</h3>
             <p class="location">{{ monitor.location }}</p>

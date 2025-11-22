@@ -1,4 +1,181 @@
 .monitoreadores-container {
+  background: linear-gradient(180deg, #070707 0%, #0f0f11 60%);
+  color: #ffffff;
+  padding: 30px;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page-header {
+  margin-bottom: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.page-header h1 {
+  color: #92BEE0;
+  font-size: 34px;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -0.3px;
+  text-shadow: 0 2px 10px rgba(146,190,224,0.06);
+}
+
+.page-header p {
+  color: #cfe7f6;
+  font-size: 15px;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+  gap: 20px;
+}
+
+.add-btn {
+  --background: linear-gradient(135deg, #92BEE0, #7BA3C7);
+  --color: #06202a;
+  font-weight: 700;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(123,163,199,0.06);
+  padding: 8px 14px;
+}
+
+ion-searchbar {
+  --background: rgba(146, 190, 224, 0.06);
+  --border-radius: 12px;
+  --box-shadow: none;
+  --color: #ffffff;
+  max-width: 480px;
+  width: 100%;
+  --placeholder-color: rgba(207,231,246,0.6);
+}
+
+.monitoreadores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.monitor-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(146, 190, 224, 0.06);
+  border-radius: 12px;
+  transition: transform 0.24s cubic-bezier(.2,.9,.3,1), box-shadow 0.24s ease, border-color 0.24s ease;
+  padding: 12px;
+}
+
+.monitor-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 34px rgba(40,72,96,0.12);
+  border-color: rgba(146,190,224,0.16);
+}
+
+.monitor-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.monitor-avatar {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #92BEE0, #7BA3C7);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(123,163,199,0.06);
+}
+
+.monitor-avatar ion-icon {
+  font-size: 22px;
+  color: #06202a;
+}
+
+.monitor-info {
+  flex: 1;
+}
+
+.monitor-info h3 {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+.location {
+  color: #9ec9e6;
+  font-size: 13px;
+  margin: 0;
+  opacity: 0.95;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background: linear-gradient(90deg,#ff6b6b,#ff8a6b);
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(255,107,53,0.06);
+}
+
+.status-badge.active {
+  background: linear-gradient(90deg,#4ecdc4,#3fd0c0);
+  color: #06202a;
+  box-shadow: 0 6px 18px rgba(78,205,196,0.06);
+}
+
+.monitor-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+  gap: 8px;
+}
+
+.monitor-actions ion-button {
+  --color: #92BEE0;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  font-weight: 600;
+}
+
+.monitor-actions ion-button[color="danger"] {
+  --color: #ff6b6b;
+}
+
+.monitor-actions ion-button[fill="clear"] {
+  background: rgba(146,190,224,0.04);
+  border-radius: 8px;
+}
+
+@media (max-width: 900px) {
+  .monitoreadores-container {
+    padding: 20px;
+  }
+
+  .actions-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .monitoreadores-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .monitor-card, .monitor-card:hover {
+    transition: none !important;
+  }
+}
+.monitoreadores-container {
   background: #000000;
   color: #ffffff;
   padding: 30px;
@@ -18,129 +195,229 @@
 
 .page-header p {
   color: #ffffff;
-  font-size: 16px;
-  margin: 0;
-  opacity: 0.8;
-}
-
-.actions-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  gap: 20px;
-}
-
-.add-btn {
-  --background: linear-gradient(135deg, #92BEE0, #7BA3C7);
-  --color: #000000;
-  font-weight: 600;
-}
-
-ion-searchbar {
-  --background: rgba(146, 190, 224, 0.1);
-  --border-radius: 12px;
-  --box-shadow: none;
-  --color: #ffffff;
-  max-width: 400px;
-}
-
-.monitoreadores-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 25px;
-}
-
-.monitor-card {
-  background: rgba(146, 190, 224, 0.1);
-  border: 2px solid rgba(146, 190, 224, 0.3);
-  border-radius: 16px;
-  transition: all 0.3s ease;
-}
-
-.monitor-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(146, 190, 224, 0.3);
-  border-color: #92BEE0;
-}
-
-.monitor-header {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.monitor-avatar {
-  width: 50px;
-  height: 50px;
-  background: linear-gradient(135deg, #92BEE0, #7BA3C7);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.monitor-avatar ion-icon {
-  font-size: 24px;
-  color: #000000;
-}
-
-.monitor-info {
-  flex: 1;
-}
-
-.monitor-info h3 {
-  color: #ffffff;
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 5px 0;
-}
-
-.location {
-  color: #92BEE0;
-  font-size: 14px;
-  margin: 0;
-}
-
-.status-badge {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  background: #ff6b6b;
-  color: #ffffff;
-}
-
-.status-badge.active {
-  background: #4ecdc4;
-  color: #000000;
-}
-
-.monitor-actions {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 15px;
-}
-
-.monitor-actions ion-button {
-  --color: #92BEE0;
-}
-
-.monitor-actions ion-button[color="danger"] {
-  --color: #ff6b6b;
-}
-
-@media (max-width: 768px) {
   .monitoreadores-container {
-    padding: 20px;
+    /* subtle dark gradient for depth */
+    background: linear-gradient(180deg, #070707 0%, #0f0f11 60%);
+    color: #ffffff;
+    padding: 36px 40px;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
   }
-  
-  .actions-bar {
+
+  .page-header {
+    margin-bottom: 28px;
+    display: flex;
     flex-direction: column;
-    align-items: stretch;
+    gap: 6px;
   }
-  
+
+  .page-header h1 {
+    color: #92BEE0;
+    font-size: 34px;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.3px;
+    text-shadow: 0 2px 10px rgba(146,190,224,0.06);
+  }
+
+  .page-header p {
+    color: #cfe7f6;
+    font-size: 15px;
+    margin: 0;
+    opacity: 0.9;
+  }
+
+  .actions-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 26px;
+    gap: 20px;
+  }
+
+  .add-btn {
+    --background: linear-gradient(135deg, #92BEE0, #7BA3C7);
+    --color: #000000;
+    font-weight: 700;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(123,163,199,0.08);
+    padding: 8px 14px;
+  }
+
+  ion-searchbar {
+    --background: rgba(146, 190, 224, 0.06);
+    --border-radius: 12px;
+    --box-shadow: none;
+    --color: #ffffff;
+    max-width: 480px;
+    width: 100%;
+    --placeholder-color: rgba(207,231,246,0.6);
+  }
+
   .monitoreadores-grid {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 22px;
   }
-}
+
+  .monitor-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(146, 190, 224, 0.08);
+    border-radius: 14px;
+    transition: transform 0.28s cubic-bezier(.2,.9,.3,1), box-shadow 0.28s ease;
+    padding: 12px 12px 18px 12px;
+  }
+
+  .monitor-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 40px rgba(71, 112, 144, 0.12);
+    border-color: rgba(146,190,224,0.22);
+  }
+
+  .monitor-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .monitor-avatar {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #92BEE0, #7BA3C7);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 18px rgba(123,163,199,0.08);
+  }
+
+  .monitor-avatar ion-icon {
+    font-size: 22px;
+    color: #06202a;
+  }
+
+  .monitor-info {
+    flex: 1;
+  }
+
+  .monitor-info h3 {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+  }
+
+  .location {
+    color: #9ec9e6;
+    font-size: 13px;
+    margin: 0;
+    opacity: 0.95;
+  }
+
+  .status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    background: linear-gradient(90deg,#ff6b6b,#ff8a6b);
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(255,107,53,0.06);
+  }
+
+  .status-badge.active {
+    background: linear-gradient(90deg,#4ecdc4,#3fd0c0);
+    color: #06202a;
+    box-shadow: 0 6px 18px rgba(78,205,196,0.06);
+  }
+
+  .monitor-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+    gap: 8px;
+  }
+
+  .monitor-actions ion-button {
+    --color: #92BEE0;
+    --padding-start: 8px;
+    --padding-end: 8px;
+    font-weight: 600;
+  }
+
+  .monitor-actions ion-button[color="danger"] {
+    --color: #ff6b6b;
+  }
+
+  .monitor-actions ion-button[fill="clear"] {
+    background: rgba(146,190,224,0.04);
+    border-radius: 8px;
+  }
+
+  @media (max-width: 900px) {
+    .monitoreadores-container {
+      padding: 20px;
+    }
+  
+    .actions-bar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  
+    .monitoreadores-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .monitor-card, .monitor-card:hover {
+      transition: none !important;
+    }
+  }
+    background: linear-gradient(90deg,#4ecdc4,#3fd0c0);
+    color: #06202a;
+    box-shadow: 0 6px 18px rgba(78,205,196,0.06);
+  }
+
+  .monitor-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+    gap: 8px;
+  }
+
+  .monitor-actions ion-button {
+    --color: #92BEE0;
+    --padding-start: 8px;
+    --padding-end: 8px;
+    font-weight: 600;
+  }
+
+  .monitor-actions ion-button[color="danger"] {
+    --color: #ff6b6b;
+  }
+
+  .monitor-actions ion-button[fill="clear"] {
+    background: rgba(146,190,224,0.04);
+    border-radius: 8px;
+  }
+
+  @media (max-width: 900px) {
+    .monitoreadores-container {
+      padding: 20px;
+    }
+  
+    .actions-bar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  
+    .monitoreadores-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .monitor-card, .monitor-card:hover {
+      transition: none !important;
+    }
+  }

@@ -199,17 +199,20 @@
   display: flex;
   flex-direction: column;
   background: rgba(146, 190, 224, 0.1) !important;
-  border: 2px solid #92BEE0;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.8),
-    0 0 20px rgba(146, 190, 224, 0.2);
+
+/* Google Map container for live route */
+#liveGmap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
 }
 
-.map-controls {
-  display: flex;
-  gap: 8px;
+.mock-map { display: none; }
 }
 
 .map-controls ion-button {
