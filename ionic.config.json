@@ -1,0 +1,7 @@
+{
+  "name": "walksafe-pwa",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
