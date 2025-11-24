@@ -10,23 +10,23 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "assets/icon/favicon.png",
-      "sizes": "any",
-      "type": "image/png",
-      "purpose": "any"
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%236366f1'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='256' fill='white' font-family='Arial'>W</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ],
   "screenshots": [
     {
-      "src": "assets/icon/favicon.png",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect width='540' height='720' fill='%230f172a'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='128' fill='%236366f1' font-family='Arial'>WalkSafe</text></svg>",
       "sizes": "540x720",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "form_factor": "narrow"
     },
     {
-      "src": "assets/icon/favicon.png",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1024 593'><rect width='1024' height='593' fill='%230f172a'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='128' fill='%236366f1' font-family='Arial'>WalkSafe</text></svg>",
       "sizes": "1024x593",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "form_factor": "wide"
     }
   ]
