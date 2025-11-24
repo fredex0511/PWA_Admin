@@ -1,0 +1,33 @@
+{
+  "name": "WalkSafe - Go safe to your place",
+  "short_name": "WalkSafe",
+  "description": "Tu compañero de seguridad para caminar con confianza",
+  "theme_color": "#6366f1",
+  "background_color": "#0f172a",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "assets/icon/favicon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "assets/icon/favicon.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "assets/icon/favicon.png",
+      "sizes": "1024x593",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
+}

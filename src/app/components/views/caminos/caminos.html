@@ -1,0 +1,118 @@
+<div class="caminos-container">
+  <!-- Left Panel: Routes List -->
+  <div class="routes-panel">
+    <div class="panel-header">
+      <h2>Caminos Activos</h2>
+      <ion-badge color="primary">{{ activeRoutes.length }}</ion-badge>
+    </div>
+    
+    <div class="routes-list">
+      <ion-card 
+        *ngFor="let route of activeRoutes; trackBy: trackByRouteId" 
+        class="route-card"
+        [class.selected]="selectedRoute?.id === route.id"
+        (click)="selectRoute(route)">
+        
+        <ion-card-content>
+          <div class="route-header">
+            <div class="route-info">
+              <h3>{{ route.name }}</h3>
+              <p class="route-user">{{ route.userName }}</p>
+            </div>
+            <div class="route-status">
+              <ion-badge [color]="getStatusColor(route.status)">
+                {{ getStatusLabel(route.status) }}
+              </ion-badge>
+            </div>
+          </div>
+          
+          <div class="route-details">
+            <div class="detail-item">
+              <ion-icon name="location-outline"></ion-icon>
+              <span>{{ route.currentLocation }}</span>
+            </div>
+            <div class="detail-item">
+              <ion-icon name="time-outline"></ion-icon>
+              <span>{{ formatTime(route.startTime) }}</span>
+            </div>
+            <div class="detail-item">
+              <ion-icon name="walk-outline"></ion-icon>
+              <span>{{ route.progress }}% completado</span>
+            </div>
+          </div>
+          
+          <div class="route-actions">
+            <ion-button fill="clear" size="small" (click)="viewRouteDetails(route, $event)">
+              <ion-icon name="eye-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" size="small" color="warning" (click)="sendAlert(route, $event)">
+              <ion-icon name="warning-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" size="small" color="danger" (click)="emergencyStop(route, $event)">
+              <ion-icon name="stop-circle-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+      
+      <div *ngIf="activeRoutes.length === 0" class="empty-state">
+        <ion-icon name="map-outline" class="empty-icon"></ion-icon>
+        <h3>No hay caminos activos</h3>
+        <p>Los caminos en curso aparecerán aquí</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Panel: Live Map -->
+  <div class="map-panel">
+    <div class="panel-header">
+      <h2>Ubicación en Vivo</h2>
+      <div class="map-controls">
+        <ion-button fill="clear" size="small" (click)="refreshLocation()">
+          <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+    
+    <div class="map-container" [class.fullscreen]="isMapFullscreen">
+      <div *ngIf="selectedRoute" class="selected-route-info">
+        <div class="route-summary">
+          <h3>{{ selectedRoute.name }}</h3>
+          <p>{{ selectedRoute.userName }}</p>
+          <div class="live-indicator">
+            <div class="pulse-dot"></div>
+            <span>En vivo</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Map placeholder - aquí se integrará el mapa real -->
+      <div class="map-view" id="liveMap">
+        <div *ngIf="!selectedRoute" class="map-placeholder">
+          <ion-icon name="map" class="placeholder-icon"></ion-icon>
+          <h3>Selecciona un camino</h3>
+          <p>Elige un camino de la lista para ver la ubicación en vivo</p>
+        </div>
+        
+        <div *ngIf="selectedRoute" class="map-content">
+          <!-- Google Map mount point for live route -->
+          <div id="liveGmap" class="gmap"></div>
+          
+          <!-- Map overlay with route info -->
+          <div class="map-overlay">
+            <div class="overlay-card">
+              <div class="overlay-header">
+                <ion-icon name="location" color="primary"></ion-icon>
+                <span>Posición Actual</span>
+              </div>
+              <div class="overlay-content">
+                <p>{{ selectedRoute.currentLocation }}</p>
+                <small>Última actualización: {{ formatTime(selectedRoute.lastUpdate) }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

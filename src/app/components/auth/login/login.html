@@ -1,0 +1,93 @@
+<ion-content class="login-content">
+	<div class="bg-effects">
+		<div class="gradient-orb orb-1"></div>
+		<div class="gradient-orb orb-2"></div>
+		<div class="gradient-orb orb-3"></div>
+	</div>
+
+	<!-- Mobile App Download Banner (visible on all platforms for testing PWA) -->
+	<div class="mobile-banner">
+		<div class="banner-content">
+			<div class="banner-icon">
+				<ion-icon name="download-outline"></ion-icon>
+			</div>
+			<div class="banner-text">
+				<h3>Descarga la App</h3>
+				<p>Acceso más rápido y funciones mejoradas</p>
+			</div>
+			<ion-button class="banner-button" fill="clear" (click)="openAppStore()">
+				<ion-icon name="arrow-forward-outline"></ion-icon>
+			</ion-button>
+		</div>
+	</div>
+
+	<div class="login-container">
+		<div class="brand">
+			<div class="logo-wrapper">
+				<div class="logo-icon" aria-label="Logo">
+					<ion-icon name="shield-checkmark"></ion-icon>
+				</div>
+			</div>
+			<h1 class="brand-title">
+				<span class="title-main">WalkSafe</span>
+				<br>
+				<span class="title-accent">Go safe to your place</span>
+			</h1>
+			<p class="brand-subtitle"></p>
+		</div>
+
+		<!-- Login Form -->
+		<form (ngSubmit)="onSubmit()" #loginForm="ngForm" class="login-form" autocomplete="off" novalidate>
+			<div class="input-group">
+				<div class="input-item">
+					<div class="input-icon">
+						<ion-icon name="mail-outline"></ion-icon>
+					</div>
+					<ion-input
+						type="email"
+						name="email"
+						required
+						aria-label="Correo Electrónico"
+						[(ngModel)]="model.email"
+						placeholder="Correo electrónico">
+					</ion-input>
+				</div>
+				<div *ngIf="loginForm.submitted && !model.email" class="error-message">
+					Por favor, ingresa un correo electrónico válido.
+				</div>
+			</div>
+
+			<div class="input-group">
+				<div class="input-item">
+					<div class="input-icon">
+						<ion-icon name="key-outline"></ion-icon>
+					</div>
+					<ion-input
+						type="password"
+						name="password"
+						required
+						minlength="8"
+						aria-label="Contraseña"
+						[(ngModel)]="model.password"
+						placeholder="Contraseña">
+					</ion-input>
+				</div>
+				<div *ngIf="loginForm.submitted && (!model.password || model.password.length < 8)" class="error-message">
+					La contraseña debe tener al menos 8 caracteres.
+				</div>
+			</div>
+
+			<div class="actions">
+				<ion-button type="submit" [disabled]="!loginForm.form.valid" class="btn-primary" expand="block">
+					<span class="btn-text">Iniciar Sesión</span>
+					<div class="btn-glow"></div>
+					<ion-icon name="arrow-forward-outline" class="btn-icon"></ion-icon>
+				</ion-button>
+			</div>
+		</form>
+
+		<div class="forgot-link">
+			<p>¿No tienes una cuenta? <a href="#" (click)="goToRegister(); $event.preventDefault()">Regístrate</a></p>
+		</div>
+	</div>
+</ion-content>

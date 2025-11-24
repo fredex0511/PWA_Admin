@@ -1,0 +1,56 @@
+/* Ionic-specific overrides so the component styles can affect ion-input / ion-button internals */
+:host {
+  color: inherit;
+}
+
+/* Target the native input inside ion-input (older and newer Ionic targets).
+   Keep padding so the text does not overlap the left icon. */
+::ng-deep ion-input input,
+::ng-deep ion-input .native-input {
+  background: transparent !important;
+  color: inherit !important;
+  font: inherit !important;
+  border: none !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+  /* match the padding used in the host stylesheet so text clears the icon */
+  padding: 18px 18px 18px 56px !important;
+  width: 100% !important;
+  height: auto !important;
+}
+
+/* Some Ionic versions expose parts; target them too */
+::ng-deep ion-input::part(native),
+::ng-deep ion-input::part(input) {
+  background: transparent !important;
+  /* ensure the part also respects padding if the browser exposes it */
+  padding: 18px 18px 18px 56px !important;
+}
+
+/* Allow our .btn-primary styles to apply to ion-button and keep expand=block behavior */
+::ng-deep ion-button.btn-primary {
+  --background: transparent;
+  --box-shadow: none;
+  padding: 0 16px;
+  position: relative;
+}
+
+::ng-deep ion-button[expand="block"].btn-primary {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Keep decorative glow element visible inside ion-button */
+::ng-deep ion-button.btn-primary .btn-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Ensure banner button uses clear styling from Ionic */
+::ng-deep .banner-button {
+  --padding-start: 0;
+  --padding-end: 0;
+}

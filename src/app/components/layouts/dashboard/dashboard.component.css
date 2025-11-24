@@ -1,0 +1,190 @@
+/* Estilos del Dashboard - coherentes con la paleta y variables de Ionic */
+
+:host {
+	display: block;
+	height: 100vh;
+	background: var(--ion-background-color, #fff);
+	/* host should not attempt to transition CSS custom properties directly */
+}
+
+ion-split-pane {
+	height: 100vh;
+}
+
+/* Ensure the menu element uses the --width variable as its actual CSS width and
+   provide an explicit transition so changing --width (or width) animates.
+   Some Ionic builds don't map the custom property to the rendered width in
+   all contexts, so set width: var(--width) explicitly. */
+ion-menu {
+	width: var(--width);
+	transition: width 220ms ease, min-width 220ms ease;
+	/* force layout width and prevent other rules from keeping it large */
+	min-width: 0 !important;
+	max-width: var(--width) !important;
+	overflow: hidden;
+}
+
+ion-menu.collapsed ion-item {
+	/* collapsed: minimal height */
+	--min-height: 2rem; /* 32px */
+	--padding-start: 0.4rem;
+	justify-content: center;
+	padding-left: 0.25rem !important;
+	padding-right: 0.25rem !important;
+}
+/* Menu lateral */
+ion-menu {
+	--width: 17.5rem; /* 280px -> 17.5rem */
+	border-right: 1px solid rgba(0,0,0,0.04);
+	background: var(--ion-surface-color, var(--ion-background-color));
+}
+
+/* Collapsed menu: narrow and hide labels */
+ion-item {
+	/* compact default height */
+	--min-height: 2.25rem; /* ~36px */
+	border-radius: 0.5rem; /* 8px */
+	margin: 0.22rem 0;
+	--padding-start: 0.6rem;
+	transition: background 160ms ease, color 160ms ease, min-height 200ms ease, padding 200ms ease;
+}
+ion-menu.collapsed {
+	--width: 4rem; /* small width showing only icons */
+	width: var(--width) !important;
+	min-width: 4rem !important;
+	max-width: 4rem !important;
+	overflow: hidden;
+}
+
+ion-menu.collapsed ion-label {
+	height: 2.25rem; /* compact header */
+	padding: 0 0.5rem;
+	display: none !important;
+}
+
+ion-menu.collapsed .menu-title { display: none; }
+
+/* when collapsed hide header title and shrink header height */
+ion-menu.collapsed .menu-header { height: 1.75rem; padding: 0 0.25rem; }
+ion-menu.collapsed ion-item {
+	--min-height: 2.75rem;
+	justify-content: center;
+	padding-left: 0.15rem !important;
+}
+
+/* Make sure list and inner containers don't force a wider size */
+ion-menu ion-list,
+ion-menu ion-content,
+ion-menu .menu-inner,
+ion-menu .menu-content {
+	width: 100% !important;
+	box-sizing: border-box;
+	overflow: hidden;
+}
+
+/* Hide labels inside items aggressively when collapsed (some Ionic versions render label inside shadow DOM) */
+ion-menu.collapsed ion-item ion-label,
+ion-menu.collapsed ion-item .label {
+	display: none !important;
+}
+
+/* Icon centered when collapsed */
+ion-menu.collapsed ion-icon[slot="start"] {
+	margin-right: 0;
+	display: block;
+}
+
+ion-menu.collapsed .menu-title { display: none; }
+
+ion-list {
+	padding: 0.75rem 0.6rem;
+}
+
+ion-list-header {
+	font-size: 1.05rem;
+	color: var(--ion-color-primary);
+	font-weight: 700;
+	padding: 1rem 0.6rem 0.25rem 0.6rem;
+}
+
+.menu-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.menu-toggle ion-icon { transform: rotate(0deg); transition: transform 180ms ease; }
+ion-menu.collapsed .menu-toggle ion-icon { transform: rotate(180deg); }
+
+ion-note {
+	display: block;
+	padding: 0 0.6rem 0.6rem 0.6rem;
+	color: var(--ion-color-medium);
+	font-size: 0.85rem;
+}
+
+/* Items del menu */
+ion-item {
+	--min-height: 2.75rem; /* 44px */
+	border-radius: 0.5rem; /* 8px */
+	margin: 0.28rem 0;
+	--padding-start: 0.75rem;
+	transition: background 160ms ease, color 160ms ease;
+}
+
+ion-item .item-inner {
+	align-items: center;
+}
+
+ion-item.selected,
+ion-item[routerlinkactive],
+ion-item[selected] {
+	background: var(--ion-color-primary);
+	color: #fff;
+}
+
+ion-item.selected ion-icon,
+ion-item[routerlinkactive] ion-icon,
+ion-item[selected] ion-icon {
+	color: #fff;
+	opacity: 0.95;
+}
+
+ion-icon[slot="start"] {
+	font-size: 1.25rem; /* 20px */
+	color: var(--ion-color-medium);
+	margin-right: 0.5rem; /* 8px */
+}
+
+/* Contenido principal */
+ion-router-outlet#main-content {
+	display: block;
+	min-height: 100vh;
+	padding: 1.25rem; /* 20px */
+	background: linear-gradient(180deg, rgba(0,0,0,0.02), transparent);
+}
+
+.page-wrapper {
+	max-width: 68.75rem; /* 1100px */
+	margin: 0 auto;
+	padding: 0.75rem; /* 12px */
+}
+
+/* Pequeños ajustes responsivos */
+@media (max-width: 48rem) { /* 768px -> 48rem */
+	ion-menu {
+		--width: 13.75rem; /* 220px */
+	}
+	ion-list-header { font-size: 1rem; }
+}
+
+/* Helper to accent small badges or statuses used inside pages */
+.ws-badge {
+	display: inline-block;
+	padding: 0.25rem 0.5rem; /* 4px 8px */
+	border-radius: 62.4375rem; /* 999px -> very large in rem */
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--ion-color-light, #fff);
+	background: var(--ion-color-secondary, #3880ff);
+}

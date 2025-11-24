@@ -1,0 +1,75 @@
+<div class="danger-zones-container">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="title-container">
+      <ion-icon name="warning" class="warning-icon"></ion-icon>
+      <h1>Zonas Peligrosas</h1>
+    </div>
+    <div class="stats-container">
+      <div class="stat-item">
+        <span class="stat-number">{{ dangerZones.length }}</span>
+        <span class="stat-label">Zonas Activas</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">{{ totalIncidents }}</span>
+        <span class="stat-label">Incidentes Base</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">50m</span>
+        <span class="stat-label">Radio Seguridad</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Map Container -->
+  <div class="map-container">
+    <div class="map-header">
+      <h2>Mapa de Zonas de Riesgo</h2>
+      <div class="map-controls">
+        <ion-button fill="clear" size="small" (click)="refreshMap()">
+          <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Map View -->
+    <div class="map-view" id="dangerZonesMap">
+      <div class="map-content">
+        <!-- Google Map mount point -->
+        <div id="gmap" class="gmap"></div>
+
+        <!-- details overlay removed: zones will not show the persistent detail card -->
+      </div>
+    </div>
+
+    <!-- Notification Controls -->
+    <div class="notification-controls">
+      <div class="notification-info">
+        <ion-icon name="notifications-outline" class="notification-icon"></ion-icon>
+        <div class="notification-text">
+          <span class="notification-title">Sistema de Alertas</span>
+          <span class="notification-subtitle">Notifica zonas peligrosas a todos los usuarios activos</span>
+        </div>
+      </div>
+      
+      <div class="notification-actions">
+        <ion-button 
+          fill="outline" 
+          size="small" 
+          (click)="previewNotification()"
+          class="preview-btn">
+          <ion-icon name="eye-outline" slot="start"></ion-icon>
+          Vista Previa
+        </ion-button>
+        
+        <ion-button 
+          (click)="sendDangerZoneNotification()" 
+          class="notify-btn"
+          [disabled]="dangerZones.length === 0">
+          <ion-icon name="send-outline" slot="start"></ion-icon>
+          Notificar Zonas Peligrosas
+        </ion-button>
+      </div>
+    </div>
+  </div>
+</div>
