@@ -15,6 +15,7 @@ import { PlatformDetectorService } from '../../../services/platform-detector';
 export class Login implements OnInit {
   model: { email: string; password: string } = { email: '', password: '' };
   isMobileWeb: boolean = false;
+  showBanner: boolean = false;
   private deferredPrompt: any = null;
 
   constructor(
@@ -28,19 +29,27 @@ export class Login implements OnInit {
     this.isMobileWeb = this.platformDetector.isMobile();
     console.log('Is mobile:', this.isMobileWeb);
     
+    // Verificar si ya está instalada
+    const isInstalled = localStorage.getItem('walksafe_pwa_installed') === 'true';
+    this.showBanner = !isInstalled;
+    
     window.addEventListener('beforeinstallprompt', (e: any) => {
       e.preventDefault();
       this.deferredPrompt = e;
       console.log('PWA install prompt available');
       
-      // Mostrar prompt en móvil y escritorio para testing
-      setTimeout(() => this.promptPWAInstall(), 500);
+      // Mostrar banner y prompt si no está instalada
+      if (!isInstalled) {
+        this.showBanner = true;
+        setTimeout(() => this.promptPWAInstall(), 500);
+      }
     });
 
     window.addEventListener('appinstalled', () => {
       console.log('PWA installed successfully');
       localStorage.setItem('walksafe_pwa_installed', 'true');
       this.deferredPrompt = null;
+      this.showBanner = false;
     });
   }
 
