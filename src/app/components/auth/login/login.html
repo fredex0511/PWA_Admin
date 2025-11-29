@@ -6,7 +6,7 @@
 	</div>
 
 	<!-- Mobile App Download Banner (visible on all platforms for testing PWA) -->
-	<div *ngIf="showBanner" class="mobile-banner">
+	<div *ngIf="isMobile && showBanner" class="mobile-banner">
 		<div class="banner-content">
 			<div class="banner-icon">
 				<ion-icon name="download-outline"></ion-icon>

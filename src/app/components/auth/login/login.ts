@@ -14,7 +14,7 @@ import { PlatformDetectorService } from '../../../services/platform-detector';
 })
 export class Login implements OnInit {
   model: { email: string; password: string } = { email: '', password: '' };
-  isMobileWeb: boolean = false;
+  isMobile: boolean = false;
   showBanner: boolean = false;
   private deferredPrompt: any = null;
 
@@ -26,8 +26,8 @@ export class Login implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.isMobileWeb = this.platformDetector.isMobile();
-    console.log('Is mobile:', this.isMobileWeb);
+    this.isMobile = this.platformDetector.isMobile();
+    console.log('Is mobile:', this.isMobile);
     
     // Verificar si ya está instalada
     const isInstalled = localStorage.getItem('walksafe_pwa_installed') === 'true';
@@ -53,16 +53,86 @@ export class Login implements OnInit {
     });
   }
 
-  onSubmit() {
+  async onSubmit() {
     console.log('Login submit', this.model);
-    window.alert(`Intentando iniciar sesión con ${this.model.email}`);
+    
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.model.email)) {
+      const alert = await this.alertController.create({
+        header: 'Email inválido',
+        message: 'Por favor ingresa un correo electrónico válido',
+        buttons: ['OK']
+      });
+      await alert.present();
+      return;
+    }
+    
+    // Validar contraseña: mínimo 8 caracteres, al menos 1 número, 1 letra y 1 carácter especial
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    if (!passwordRegex.test(this.model.password)) {
+      const alert = await this.alertController.create({
+        header: 'Contraseña inválida',
+        message: 'La contraseña debe tener mínimo 8 caracteres, incluyendo al menos una letra, un número y un carácter especial (@$!%*#?&)',
+        buttons: ['OK']
+      });
+      await alert.present();
+      return;
+    }
+    
+    // Login exitoso
+    localStorage.setItem('walksafe_user_logged_in', 'true');
+    localStorage.setItem('walksafe_user_email', this.model.email);
+    
+    const toast = await this.toastController.create({
+      message: '✅ Inicio de sesión exitoso',
+      duration: 2000,
+      position: 'top',
+      color: 'success'
+    });
+    await toast.present();
+    
+    // Redirigir según el dispositivo
+    const dashboardRoute = this.isMobile ? '/dashboard-mobile' : '/dashboard';
+    this.router.navigate([dashboardRoute], { replaceUrl: true });
   }
 
-  onForgot() {
-    const email = this.model.email || prompt('Introduce tu correo para recuperar contraseña:');
-    if (email) {
-      window.alert(`Se ha enviado un enlace de recuperación a ${email}`);
-    }
+  async onForgot() {
+    const email = this.model.email || '';
+    
+    const alert = await this.alertController.create({
+      header: 'Recuperar contraseña',
+      message: 'Introduce tu correo electrónico',
+      inputs: [
+        {
+          name: 'email',
+          type: 'email',
+          placeholder: 'correo@ejemplo.com',
+          value: email
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Enviar',
+          handler: async (data) => {
+            if (data.email) {
+              const toast = await this.toastController.create({
+                message: `📧 Enlace de recuperación enviado a ${data.email}`,
+                duration: 3000,
+                position: 'bottom',
+                color: 'success'
+              });
+              await toast.present();
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
   goToRegister() {
@@ -125,7 +195,9 @@ export class Login implements OnInit {
         }
       ]
     });
-    await alert.present();
+    if (!isInstalled && this.isMobile){
+      await alert.present();
+    }
   }
 
   private async showPWANotAvailableMessage() {
