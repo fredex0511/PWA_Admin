@@ -37,7 +37,7 @@
 		</div>
 
 		<!-- Login Form -->
-		<form (ngSubmit)="onSubmit()" #loginForm="ngForm" class="login-form" autocomplete="off" novalidate>
+		<form (ngSubmit)="onSubmit()" #loginForm="ngForm" class="login-form" novalidate>
 			<div class="input-group">
 				<div class="input-item">
 					<div class="input-icon">
@@ -47,6 +47,7 @@
 						type="email"
 						name="email"
 						required
+						inputmode="email"
 						aria-label="Correo Electrónico"
 						[(ngModel)]="model.email"
 						placeholder="Correo electrónico">
@@ -67,6 +68,7 @@
 						name="password"
 						required
 						minlength="8"
+						inputmode="text"
 						aria-label="Contraseña"
 						[(ngModel)]="model.password"
 						placeholder="Contraseña">
