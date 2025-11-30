@@ -39,6 +39,16 @@
 		<!-- Login Form -->
 		<form (ngSubmit)="onSubmit()" #loginForm="ngForm" class="login-form" novalidate>
 			<div class="input-group">
+				<!-- TEST INPUT NATIVO HTML -->
+				<div class="input-wrapper">
+					<div class="input-icon">
+						<ion-icon name="mail-outline"></ion-icon>
+					</div>
+					<input type="email" name="testEmail" placeholder="Test input nativo" style="width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;">
+				</div>
+			</div>
+
+			<div class="input-group">
 				<div class="input-wrapper">
 					<div class="input-icon">
 						<ion-icon name="mail-outline"></ion-icon>
