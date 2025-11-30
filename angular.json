@@ -47,7 +47,6 @@
           "configurations": {
             "production": {
               "optimization": false,
-              "buildOptimizer": false,
               "sourceMap": true,
               "budgets": [
                 {
