@@ -316,12 +316,6 @@ export class Caminos implements OnInit, OnDestroy {
     this.liveMap = new g.maps.Map(document.getElementById('liveGmap') as HTMLElement, {
       center,
       zoom: 15,
-      styles: [
-        { elementType: 'geometry', stylers: [{ color: '#1a1a1a' }] },
-        { elementType: 'labels.text.fill', stylers: [{ color: '#ffffff' }] },
-        { elementType: 'labels.text.stroke', stylers: [{ color: '#000000' }] },
-        { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#2d2d2d' }] }
-      ],
       disableDefaultUI: true
     });
 
