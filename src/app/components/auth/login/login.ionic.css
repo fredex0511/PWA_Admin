@@ -3,7 +3,8 @@
 }
 
 ::ng-deep ion-input input,
-::ng-deep ion-input .native-input {
+::ng-deep ion-input .native-input,
+::ng-deep ion-input .input-wrapper {
   background: transparent !important;
   color: inherit !important;
   font: inherit !important;
@@ -12,6 +13,9 @@
   box-sizing: border-box !important;
   width: 100% !important;
   height: auto !important;
+  pointer-events: auto !important;
+  -webkit-user-select: text !important;
+  user-select: text !important;
 }
 
 ::ng-deep ion-input::part(native),
