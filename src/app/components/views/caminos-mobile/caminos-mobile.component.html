@@ -20,21 +20,17 @@
       </div>
 
       <div *ngIf="addingPath" class="add-path-form-card">
-        <div class="add-path-form-title">Nuevo Camino</div>
-        <ion-item>
-          <ion-label position="floating">Nombre</ion-label>
-          <ion-input [(ngModel)]="newPath.name"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="floating">Origen</ion-label>
-          <ion-input [(ngModel)]="newPath.origin"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="floating">Destino</ion-label>
-          <ion-input [(ngModel)]="newPath.destination"></ion-input>
-        </ion-item>
-        <ion-button expand="block" (click)="saveNewPath()">Guardar</ion-button>
-        <ion-button expand="block" color="medium" (click)="addingPath = false">Cancelar</ion-button>
+        <app-path-form
+          [path]="newPath"
+          [originSuggestions]="originSuggestions"
+          [destinationSuggestions]="destinationSuggestions"
+          (save)="saveNewPath()"
+          (cancel)="addingPath = false"
+          (searchOrigin)="onSearchOrigin($event)"
+          (searchDestination)="onSearchDestination($event)"
+          (selectOrigin)="onSelectOrigin($event)"
+          (selectDestination)="onSelectDestination($event)">
+        </app-path-form>
       </div>
     </ng-container>
 

@@ -3,7 +3,7 @@ import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, AlertController } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
-import { PathMapComponent } from '../path-map/path-map.component';
+import { PathFormComponent } from '../path-form/path-form.component';
 
 interface UserPath {
   name: string;
@@ -16,7 +16,7 @@ interface UserPath {
 @Component({
   selector: 'app-caminos-mobile',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, PathMapComponent],
+  imports: [CommonModule, IonicModule, FormsModule, PathFormComponent],
   templateUrl: './caminos-mobile.component.html',
   styleUrls: ['./caminos-mobile.component.css']
 })
@@ -38,6 +38,55 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
   private directionsService: any = null;
   private directionsRenderer: any = null;
   private mapsLoaded = false;
+  private autocompleteService: any = null;
+  // Autocomplete handlers for PathFormComponent
+  onSearchOrigin(event: any) {
+    const input = event?.target?.value || '';
+    if (!this.autocompleteService) {
+      const g = (window as any).google;
+      if (g && g.maps && g.maps.places) {
+        this.autocompleteService = new g.maps.places.AutocompleteService();
+      }
+    }
+    if (this.autocompleteService && input.length > 2) {
+      this.autocompleteService.getPlacePredictions({ input }, (predictions: any[], status: any) => {
+        this.ngZone.run(() => {
+          this.originSuggestions = predictions || [];
+        });
+      });
+    } else {
+      this.originSuggestions = [];
+    }
+  }
+
+  onSearchDestination(event: any) {
+    const input = event?.target?.value || '';
+    if (!this.autocompleteService) {
+      const g = (window as any).google;
+      if (g && g.maps && g.maps.places) {
+        this.autocompleteService = new g.maps.places.AutocompleteService();
+      }
+    }
+    if (this.autocompleteService && input.length > 2) {
+      this.autocompleteService.getPlacePredictions({ input }, (predictions: any[], status: any) => {
+        this.ngZone.run(() => {
+          this.destinationSuggestions = predictions || [];
+        });
+      });
+    } else {
+      this.destinationSuggestions = [];
+    }
+  }
+
+  onSelectOrigin(suggestion: any) {
+    this.newPath.origin = suggestion.description;
+    this.originSuggestions = [];
+  }
+
+  onSelectDestination(suggestion: any) {
+    this.newPath.destination = suggestion.description;
+    this.destinationSuggestions = [];
+  }
 
   constructor(private alertController: AlertController, private ngZone: NgZone) {}
 
@@ -210,5 +259,4 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Lógica de mapa eliminada: ahora se usa PathMapComponent
 }

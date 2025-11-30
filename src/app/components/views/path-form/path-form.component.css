@@ -1,22 +1,67 @@
 .add-path-form {
-  background: #fff;
-  margin: 18px 12px 0 12px;
-  padding: 18px 14px 10px 14px;
-  border-radius: 1rem;
-  box-shadow: 0 2px 8px rgba(99,102,241,0.07);
+  background: transparent;
+  padding: 0;
 }
+
 ion-list-header {
   font-size: 1.1rem;
-  color: #6366f1;
+  color: #92BEE0;
   font-weight: 700;
-  padding: 1rem 0.6rem 0.25rem 0.6rem;
+  padding: 0 0 0.5rem 0;
 }
-ion-list[ng-reflect-ng-if][ng-reflect-ng-if="true"] {
-  margin-top: 0;
-  box-shadow: none;
+
+ion-item {
+  --background: rgba(146,190,224,0.04);
+  --color: #fff;
   border-radius: 0.5rem;
-  background: #f3f4f6;
+  border: 1px solid #92BEE0;
+  margin-bottom: 10px;
 }
+
+ion-label {
+  --color: #92BEE0 !important;
+  color: #92BEE0 !important;
+}
+
+ion-input {
+  --color: #fff !important;
+  color: #fff !important;
+}
+
+ion-list {
+  background: rgba(146,190,224,0.08);
+  border: 1px solid #92BEE0;
+  border-radius: 0.5rem;
+  margin-top: 8px;
+  padding: 4px;
+}
+
+ion-list ion-item {
+  --background: rgba(146,190,224,0.1);
+  border: none;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+ion-list ion-item:hover {
+  --background: rgba(146,190,224,0.2);
+}
+
 ion-button[expand="block"] {
   margin-top: 10px;
+}
+
+ion-button {
+  --color: #92BEE0;
+}
+
+ion-button[color="primary"] {
+  --background: #92BEE0;
+  --color: #000;
+}
+
+ion-button[color="medium"] {
+  --background: rgba(146,190,224,0.2);
+  --color: #92BEE0;
 }
