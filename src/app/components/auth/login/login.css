@@ -14,13 +14,14 @@
 
 /* Background Effects */
 .bg-effects {
-	position: absolute;
+	position: fixed;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
 	pointer-events: none;
-	z-index: 0; /* Asegura que esté detrás del contenido principal */
+	z-index: -1;
+	will-change: transform;
 }
 
 .gradient-orb {
@@ -85,7 +86,7 @@
 	width: 100%;
 	padding: 30px;
 	position: relative;
-	z-index: 1;
+	z-index: 10;
 	margin: 0 auto; /* Center horizontally */
 	margin-top: 10rem; /* Espacio superior para evitar empalme con banner */
 
@@ -201,7 +202,7 @@
 	position: relative;
 }
 
-.input-item {
+.input-wrapper {
 	position: relative;
 	display: flex;
 	align-items: center;
@@ -210,21 +211,22 @@
 	border-radius: 12px;
 	backdrop-filter: blur(10px);
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-	overflow: hidden;
+	overflow: visible;
 	min-height: 56px;
 	transition: box-shadow 0.3s ease, border-color 0.3s ease;
+	pointer-events: auto;
 }
 
-.input-item:focus-within {
+.input-wrapper:focus-within {
 	border-color: #4A90E2;
 	box-shadow: 0 0 8px rgba(74, 144, 226, 0.5);
 }
 
-.input-item:hover {
+.input-wrapper:hover {
 	box-shadow: 0 0 6px rgba(255, 255, 255, 0.2);
 }
 
-.input-item input {
+.input-wrapper input {
 	flex: 1;
 	background: transparent;
 	border: none;
@@ -234,9 +236,11 @@
 	padding: 18px 18px 18px 56px;
 	font-family: inherit;
 	-webkit-tap-highlight-color: rgba(0,0,0,0);
+	pointer-events: auto;
+	touch-action: manipulation;
 }
 
-.input-item input::placeholder {
+.input-wrapper input::placeholder {
 	color: rgba(255, 255, 255, 0.5);
 	font-size: 15px;
 	font-style: normal;
@@ -250,11 +254,12 @@
 	transform: translateY(-50%);
 	color: rgba(255, 255, 255, 0.6);
 	font-size: 18px;
-	z-index: 2;
+	z-index: 1;
 	transition: color 0.3s ease;
+	pointer-events: none;
 }
 
-.input-item:focus-within .input-icon {
+.input-wrapper:focus-within .input-icon {
 	color: #92BEE0;
 }
 
@@ -384,15 +389,15 @@
 }
 
 /* Input autofill styles */
-.input-item input:-webkit-autofill,
-.input-item input:-webkit-autofill:hover,
-.input-item input:-webkit-autofill:focus {
+.input-wrapper input:-webkit-autofill,
+.input-wrapper input:-webkit-autofill:hover,
+.input-wrapper input:-webkit-autofill:focus {
 	-webkit-box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.04) inset;
 	-webkit-text-fill-color: #ffffff;
 	transition: background-color 5000s ease-in-out 0s;
 }
 
-.input-item input:-moz-autofill {
+.input-wrapper input:-moz-autofill {
 	background-color: rgba(255, 255, 255, 0.04) !important;
 	color: #ffffff !important;
 }
@@ -403,17 +408,17 @@
 	margin-top: 4px;
 }
 
-.input-item input:focus {
+.input-wrapper input:focus {
 	outline: none;
 	border-color: #4A90E2;
 	box-shadow: 0 0 8px rgba(74, 144, 226, 0.5);
 }
 
-.input-item input:invalid {
+.input-wrapper input:invalid {
 	border-color: #ff6b6b;
 }
 
-.input-item input:invalid:focus {
+.input-wrapper input:invalid:focus {
 	box-shadow: 0 0 8px rgba(255, 107, 107, 0.5);
 }
 
@@ -468,11 +473,11 @@
 		font-size: 24px;
 	}
 	
-	.input-item {
+	.input-wrapper {
 		min-height: 52px;
 	}
 	
-	.input-item input {
+	.input-wrapper input {
 		padding: 14px 14px 14px 48px;
 		font-size: 15px;
 	}

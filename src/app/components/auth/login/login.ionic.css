@@ -20,11 +20,13 @@
 }
 
 
-.input-item ion-input {
+.input-wrapper ion-input {
   --padding-start: 56px;  
   --padding-end: 18px;
   --padding-top: 14px;
   --padding-bottom: 14px;
+  pointer-events: auto;
+  touch-action: manipulation;
 }
 
 ::ng-deep ion-button.btn-primary {

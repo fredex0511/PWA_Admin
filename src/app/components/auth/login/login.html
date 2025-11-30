@@ -39,7 +39,7 @@
 		<!-- Login Form -->
 		<form (ngSubmit)="onSubmit()" #loginForm="ngForm" class="login-form" novalidate>
 			<div class="input-group">
-				<div class="input-item">
+				<div class="input-wrapper">
 					<div class="input-icon">
 						<ion-icon name="mail-outline"></ion-icon>
 					</div>
@@ -47,6 +47,7 @@
 						type="email"
 						name="email"
 						required
+						legacy="true"
 						inputmode="email"
 						aria-label="Correo Electrónico"
 						[(ngModel)]="model.email"
@@ -59,7 +60,7 @@
 			</div>
 
 			<div class="input-group">
-				<div class="input-item">
+				<div class="input-wrapper">
 					<div class="input-icon">
 						<ion-icon name="key-outline"></ion-icon>
 					</div>
@@ -67,6 +68,7 @@
 						type="password"
 						name="password"
 						required
+						legacy="true"
 						minlength="8"
 						inputmode="text"
 						aria-label="Contraseña"
