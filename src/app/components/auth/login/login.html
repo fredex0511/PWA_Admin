@@ -39,30 +39,19 @@
 		<!-- Login Form -->
 		<form (ngSubmit)="onSubmit()" #loginForm="ngForm" class="login-form" novalidate>
 			<div class="input-group">
-				<!-- TEST INPUT NATIVO HTML -->
 				<div class="input-wrapper">
 					<div class="input-icon">
 						<ion-icon name="mail-outline"></ion-icon>
 					</div>
-					<input type="email" name="testEmail" placeholder="Test input nativo" style="width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;">
-				</div>
-			</div>
-
-			<div class="input-group">
-				<div class="input-wrapper">
-					<div class="input-icon">
-						<ion-icon name="mail-outline"></ion-icon>
-					</div>
-					<ion-input
+					<input
 						type="email"
 						name="email"
 						required
-						legacy="true"
 						inputmode="email"
 						aria-label="Correo Electrónico"
 						[(ngModel)]="model.email"
-						placeholder="Correo electrónico">
-					</ion-input>
+						placeholder="Correo electrónico"
+						style="width:100%;background:transparent;color:#fff;border:none;outline:none;padding:18px 18px 18px 56px;font-size:16px;">
 				</div>
 				<div *ngIf="loginForm.submitted && !model.email" class="error-message">
 					Por favor, ingresa un correo electrónico válido.
@@ -74,17 +63,16 @@
 					<div class="input-icon">
 						<ion-icon name="key-outline"></ion-icon>
 					</div>
-					<ion-input
+					<input
 						type="password"
 						name="password"
 						required
-						legacy="true"
 						minlength="8"
 						inputmode="text"
 						aria-label="Contraseña"
 						[(ngModel)]="model.password"
-						placeholder="Contraseña">
-					</ion-input>
+						placeholder="Contraseña"
+						style="width:100%;background:transparent;color:#fff;border:none;outline:none;padding:18px 18px 18px 56px;font-size:16px;">
 				</div>
 				<div *ngIf="loginForm.submitted && (!model.password || model.password.length < 8)" class="error-message">
 					La contraseña debe tener al menos 8 caracteres.
@@ -105,3 +93,4 @@
 		</div>
 	</div>
 </ion-content>
+
