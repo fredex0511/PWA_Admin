@@ -63,5 +63,8 @@
     "tailwindcss": "^4.1.17",
     "typescript": "~5.9.0"
   },
-  "description": "An Ionic project"
+  "description": "An Ionic project",
+  "engines": {
+    "node": "22.20.0"
+  }
 }
