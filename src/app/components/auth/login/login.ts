@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule, ToastController, AlertController } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
@@ -12,45 +12,58 @@ import { PlatformDetectorService } from '../../../services/platform-detector';
   templateUrl: './login.html',
   styleUrls: ['./login.css', './login.ionic.css']
 })
-export class Login implements OnInit {
+export class Login implements OnInit, OnDestroy {
   model: { email: string; password: string } = { email: '', password: '' };
   isMobile: boolean = false;
   showBanner: boolean = false;
   private deferredPrompt: any = null;
 
+  private beforeInstallPromptListener: (() => void) | null = null;
+  private appInstalledListener: (() => void) | null = null;
+
   constructor(
     private router: Router,
     private platformDetector: PlatformDetectorService,
     private toastController: ToastController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private renderer: Renderer2
   ) {}
 
   ngOnInit() {
     this.isMobile = this.platformDetector.isMobile();
     console.log('Is mobile:', this.isMobile);
-    
+
     // Verificar si ya está instalada
     const isInstalled = localStorage.getItem('walksafe_pwa_installed') === 'true';
     this.showBanner = !isInstalled;
-    
-    window.addEventListener('beforeinstallprompt', (e: any) => {
+
+    this.beforeInstallPromptListener = this.renderer.listen('window', 'beforeinstallprompt', (e: any) => {
       e.preventDefault();
       this.deferredPrompt = e;
       console.log('PWA install prompt available');
-      
-      // Mostrar banner y prompt si no está instalada
       if (!isInstalled) {
         this.showBanner = true;
         setTimeout(() => this.promptPWAInstall(), 500);
       }
     });
 
-    window.addEventListener('appinstalled', () => {
+    this.appInstalledListener = this.renderer.listen('window', 'appinstalled', () => {
       console.log('PWA installed successfully');
       localStorage.setItem('walksafe_pwa_installed', 'true');
       this.deferredPrompt = null;
       this.showBanner = false;
     });
+  }
+
+  ngOnDestroy() {
+    if (this.beforeInstallPromptListener) {
+      this.beforeInstallPromptListener();
+      this.beforeInstallPromptListener = null;
+    }
+    if (this.appInstalledListener) {
+      this.appInstalledListener();
+      this.appInstalledListener = null;
+    }
   }
 
   async onSubmit() {

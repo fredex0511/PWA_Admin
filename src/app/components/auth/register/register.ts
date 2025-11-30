@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
@@ -13,23 +14,32 @@ import { CommonModule } from '@angular/common';
 export class Register {
   model: { name: string; email: string; password: string; confirmPassword: string } = { name: '', email: '', password: '', confirmPassword: '' };
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private alertController: AlertController) {}
 
-  onSubmit() {
+  async onSubmit() {
     if (!this.model.name || !this.model.email || !this.model.password) {
-      window.alert('Por favor completa todos los campos.');
+      await this.presentAlert('Por favor completa todos los campos.');
       return;
     }
 
     if (this.model.password !== this.model.confirmPassword) {
-      window.alert('Las contraseñas no coinciden.');
+      await this.presentAlert('Las contraseñas no coinciden.');
       return;
     }
 
     console.log('Register submit', this.model);
-    window.alert(`Cuenta creada para ${this.model.email} (simulado)`);
+    await this.presentAlert(`Cuenta creada para ${this.model.email} (simulado)`);
     // After registration succeed, navigate to login or dashboard
     this.goToLogin();
+  }
+
+  async presentAlert(message: string) {
+    const alert = await this.alertController.create({
+      header: 'Registro',
+      message,
+      buttons: ['OK']
+    });
+    await alert.present();
   }
 
   goToLogin() {

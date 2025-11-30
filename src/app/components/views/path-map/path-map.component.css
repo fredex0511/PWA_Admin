@@ -12,7 +12,5 @@
   margin-bottom: 12px;
   background: #e0e0e0;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
 }

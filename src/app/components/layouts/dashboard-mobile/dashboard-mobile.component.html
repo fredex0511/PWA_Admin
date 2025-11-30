@@ -1,45 +1,9 @@
-
 <ion-header>
   <ion-toolbar color="primary">
     <ion-title>WalkSafe</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="logout()">
-        <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <div class="welcome-header">
-    <h1>Bienvenido</h1>
-    <p>{{ userEmail }}</p>
-  </div>
-
-  <!-- Lista de Caminos Guardados -->
-  <app-path-list *ngIf="!addingPath && !activePath"
-    [userPaths]="userPaths"
-    (startPath)="confirmStartPath($event)"
-    (editPath)="editPath($event)"
-    (addPath)="addingPath = true">
-  </app-path-list>
-
-  <!-- Formulario para agregar nuevo camino -->
-  <app-path-form *ngIf="addingPath"
-    [path]="newPath"
-    [originSuggestions]="originSuggestions"
-    [destinationSuggestions]="destinationSuggestions"
-    (save)="saveNewPath()"
-    (cancel)="addingPath = false"
-    (searchOrigin)="searchOrigin($event)"
-    (searchDestination)="searchDestination($event)"
-    (selectOrigin)="selectOrigin($event)"
-    (selectDestination)="selectDestination($event)">
-  </app-path-form>
-
-  <!-- Pantalla de viaje activo con mapa -->
-  <app-path-map *ngIf="activePath"
-    [path]="activePath"
-    (end)="endActivePath()">
-  </app-path-map>
+  <ion-router-outlet></ion-router-outlet>
 </ion-content>

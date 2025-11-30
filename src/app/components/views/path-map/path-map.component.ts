@@ -25,7 +25,7 @@ export class PathMapComponent implements OnChanges, AfterViewInit {
 
   renderMap() {
     const g = (window as any).google;
-    const mapEl = document.getElementById('map');
+    const mapEl = document.getElementById('dashboardMap');
     if (!g || !g.maps || !mapEl || !this.path) return;
     let origin = this.path.originLatLng;
     let destination = this.path.destinationLatLng;

@@ -20,7 +20,19 @@ export const routes: Routes = [
   },
   {
     path: 'dashboard-mobile',
-    component: DashboardMobileComponent
+    component: DashboardMobileComponent,
+    children: [
+      {
+        path: '',
+        redirectTo: 'caminos',
+        pathMatch: 'full',
+      },
+      {
+        path: 'caminos',
+        loadComponent: () => import('./components/views/caminos-mobile/caminos-mobile.component').then(m => m.CaminosMobileComponent)
+      },
+      // Puedes agregar más rutas móviles aquí (incidentes, monitoreadores, zonas-peligrosas, etc.)
+    ]
   },
   {
     path: 'dashboard',
