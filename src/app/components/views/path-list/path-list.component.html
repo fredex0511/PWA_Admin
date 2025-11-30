@@ -1,0 +1,21 @@
+<ion-list>
+  <ion-list-header>
+    <ion-label>Caminos guardados</ion-label>
+  </ion-list-header>
+  <ion-item *ngFor="let path of userPaths" (click)="startPath.emit(path)">
+    <ion-icon name="map-outline" slot="start"></ion-icon>
+    <ion-label>
+      <h2>{{ path.name }}</h2>
+      <p>{{ path.origin }} → {{ path.destination }}</p>
+    </ion-label>
+    <ion-button fill="clear" slot="end" color="primary" (click)="editPath.emit(path); $event.stopPropagation()">
+      <ion-icon name="create-outline"></ion-icon>
+    </ion-button>
+  </ion-item>
+  <ion-item lines="none">
+    <ion-button expand="block" color="secondary" (click)="addPath.emit()">
+      <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+      Agregar nuevo camino
+    </ion-button>
+  </ion-item>
+</ion-list>

@@ -1,0 +1,18 @@
+.active-path-map {
+  margin: 18px 12px 0 12px;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.07);
+  padding: 16px 10px 10px 10px;
+}
+.map-container {
+  width: 100%;
+  height: 220px;
+  border-radius: 0.75rem;
+  margin-bottom: 12px;
+  background: #e0e0e0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -1,0 +1,11 @@
+<div class="active-path-map">
+  <ion-list-header>
+    <ion-label>Ruta activa: {{ path?.name }}</ion-label>
+  </ion-list-header>
+  <div id="map" class="map-container"></div>
+  <ion-row>
+    <ion-col>
+      <ion-button expand="block" color="danger" (click)="end.emit()">Finalizar viaje</ion-button>
+    </ion-col>
+  </ion-row>
+</div>

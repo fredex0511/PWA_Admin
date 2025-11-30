@@ -1,0 +1,32 @@
+<form (ngSubmit)="save.emit(path)" class="add-path-form">
+  <ion-list-header>
+    <ion-label>Nuevo camino</ion-label>
+  </ion-list-header>
+  <ion-item>
+    <ion-label position="floating">Nombre</ion-label>
+    <ion-input [(ngModel)]="path.name" name="name" required></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="floating">Origen</ion-label>
+    <ion-input [(ngModel)]="path.origin" name="origin" required autocomplete="off" (ionInput)="searchOrigin.emit($event)"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="floating">Destino</ion-label>
+    <ion-input [(ngModel)]="path.destination" name="destination" required autocomplete="off" (ionInput)="searchDestination.emit($event)"></ion-input>
+  </ion-item>
+  <!-- Sugerencias de Google Maps -->
+  <ion-list *ngIf="originSuggestions.length">
+    <ion-item *ngFor="let suggestion of originSuggestions" (click)="selectOrigin.emit(suggestion)">{{ suggestion.description }}</ion-item>
+  </ion-list>
+  <ion-list *ngIf="destinationSuggestions.length">
+    <ion-item *ngFor="let suggestion of destinationSuggestions" (click)="selectDestination.emit(suggestion)">{{ suggestion.description }}</ion-item>
+  </ion-list>
+  <ion-row>
+    <ion-col>
+      <ion-button expand="block" type="submit" color="primary">Guardar</ion-button>
+    </ion-col>
+    <ion-col>
+      <ion-button expand="block" color="medium" (click)="cancel.emit()">Cancelar</ion-button>
+    </ion-col>
+  </ion-row>
+</form>

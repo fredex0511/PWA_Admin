@@ -1,3 +1,4 @@
+
 <ion-header>
   <ion-toolbar color="primary">
     <ion-title>WalkSafe</ion-title>
@@ -10,71 +11,35 @@
 </ion-header>
 
 <ion-content>
-  <!-- Header Card -->
   <div class="welcome-header">
     <h1>Bienvenido</h1>
     <p>{{ userEmail }}</p>
   </div>
 
-  <!-- Quick Stats -->
-  <div class="stats-container">
-    <ion-card class="stat-card">
-      <ion-card-content>
-        <ion-icon name="map-outline" class="stat-icon"></ion-icon>
-        <h2>12</h2>
-        <p>Caminos</p>
-      </ion-card-content>
-    </ion-card>
+  <!-- Lista de Caminos Guardados -->
+  <app-path-list *ngIf="!addingPath && !activePath"
+    [userPaths]="userPaths"
+    (startPath)="confirmStartPath($event)"
+    (editPath)="editPath($event)"
+    (addPath)="addingPath = true">
+  </app-path-list>
 
-    <ion-card class="stat-card">
-      <ion-card-content>
-        <ion-icon name="people-outline" class="stat-icon"></ion-icon>
-        <h2>8</h2>
-        <p>Monitoreadores</p>
-      </ion-card-content>
-    </ion-card>
+  <!-- Formulario para agregar nuevo camino -->
+  <app-path-form *ngIf="addingPath"
+    [path]="newPath"
+    [originSuggestions]="originSuggestions"
+    [destinationSuggestions]="destinationSuggestions"
+    (save)="saveNewPath()"
+    (cancel)="addingPath = false"
+    (searchOrigin)="searchOrigin($event)"
+    (searchDestination)="searchDestination($event)"
+    (selectOrigin)="selectOrigin($event)"
+    (selectDestination)="selectDestination($event)">
+  </app-path-form>
 
-    <ion-card class="stat-card">
-      <ion-card-content>
-        <ion-icon name="alert-circle-outline" class="stat-icon"></ion-icon>
-        <h2>3</h2>
-        <p>Incidentes</p>
-      </ion-card-content>
-    </ion-card>
-  </div>
-
-  <!-- Menu Cards -->
-  <div class="menu-grid">
-    <ion-card *ngFor="let item of menuItems" class="menu-card" (click)="navigateTo(item.route)">
-      <ion-card-content>
-        <ion-icon [name]="item.icon" class="menu-icon"></ion-icon>
-        <h3>{{ item.title }}</h3>
-      </ion-card-content>
-    </ion-card>
-  </div>
+  <!-- Pantalla de viaje activo con mapa -->
+  <app-path-map *ngIf="activePath"
+    [path]="activePath"
+    (end)="endActivePath()">
+  </app-path-map>
 </ion-content>
-
-<!-- Bottom Navigation -->
-<ion-tabs>
-  <ion-tab-bar slot="bottom">
-    <ion-tab-button tab="home">
-      <ion-icon name="home-outline"></ion-icon>
-      <ion-label>Inicio</ion-label>
-    </ion-tab-button>
-
-    <ion-tab-button tab="map">
-      <ion-icon name="map-outline"></ion-icon>
-      <ion-label>Mapa</ion-label>
-    </ion-tab-button>
-
-    <ion-tab-button tab="alerts">
-      <ion-icon name="notifications-outline"></ion-icon>
-      <ion-label>Alertas</ion-label>
-    </ion-tab-button>
-
-    <ion-tab-button tab="profile">
-      <ion-icon name="person-outline"></ion-icon>
-      <ion-label>Perfil</ion-label>
-    </ion-tab-button>
-  </ion-tab-bar>
-</ion-tabs>
