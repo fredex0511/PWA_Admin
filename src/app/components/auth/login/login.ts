@@ -4,7 +4,7 @@ import { IonicModule, ToastController, AlertController } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { PlatformDetectorService } from '../../../services/platform-detector';
-
+import { AuthService } from 'src/app/services/auth';
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -26,7 +26,8 @@ export class Login implements OnInit, OnDestroy {
     private platformDetector: PlatformDetectorService,
     private toastController: ToastController,
     private alertController: AlertController,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -68,7 +69,7 @@ export class Login implements OnInit, OnDestroy {
 
   async onSubmit() {
     console.log('Login submit', this.model);
-    
+
     // Validar formato de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(this.model.email)) {
@@ -80,9 +81,10 @@ export class Login implements OnInit, OnDestroy {
       await alert.present();
       return;
     }
-    
+
     // Validar contraseña: mínimo 8 caracteres, al menos 1 número, 1 letra y 1 carácter especial
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    console.log('Password validation:', passwordRegex.test(this.model.password));
     if (!passwordRegex.test(this.model.password)) {
       const alert = await this.alertController.create({
         header: 'Contraseña inválida',
@@ -92,22 +94,49 @@ export class Login implements OnInit, OnDestroy {
       await alert.present();
       return;
     }
-    
-    // Login exitoso
-    localStorage.setItem('walksafe_user_logged_in', 'true');
-    localStorage.setItem('walksafe_user_email', this.model.email);
-    
-    const toast = await this.toastController.create({
-      message: '✅ Inicio de sesión exitoso',
-      duration: 2000,
-      position: 'top',
-      color: 'success'
+
+    // Llamar al servicio de autenticación
+    this.authService.login({ email: this.model.email, password: this.model.password }).subscribe({
+      next: async (resp) => {
+        try {
+          localStorage.setItem('walksafe_user_logged_in', 'true');
+          localStorage.setItem('walksafe_user_email', resp.user?.email || this.model.email);
+          localStorage.setItem('walksafe_token', resp.token?.token || '');
+          localStorage.setItem('walksafe_token_type', resp.token?.type || '');
+          localStorage.setItem('walksafe_token_expires_at', resp.token?.expires_at || '');
+          localStorage.setItem('walksafe_user', JSON.stringify(resp.user || {}));
+
+          const toast = await this.toastController.create({
+            message: '✅ Inicio de sesión exitoso',
+            duration: 2000,
+            position: 'top',
+            color: 'success'
+          });
+          await toast.present();
+
+          const dashboardRoute = this.isMobile ? '/dashboard-mobile' : '/dashboard';
+          this.router.navigate([dashboardRoute], { replaceUrl: true });
+        } catch (e) {
+          console.error('Error handling login response', e);
+        }
+      },
+      error: async (err) => {
+        console.error('Login error', err);
+        let message = 'Error al iniciar sesión';
+        if (err && err.error && err.error.message) {
+          message = err.error.message;
+        } else if (err && err.message) {
+          message = err.message;
+        }
+
+        const alert = await this.alertController.create({
+          header: 'Error de autenticación',
+          message,
+          buttons: ['OK']
+        });
+        await alert.present();
+      }
     });
-    await toast.present();
-    
-    // Redirigir según el dispositivo
-    const dashboardRoute = this.isMobile ? '/dashboard-mobile' : '/dashboard';
-    this.router.navigate([dashboardRoute], { replaceUrl: true });
   }
 
   async onForgot() {
