@@ -1,7 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-
+import { RunroutesService } from 'src/app/services/runroutes';
+import { RouteRun } from 'src/app/interfaces/route-run';
+import { SocketService } from 'src/app/services/socket/socket';
+import { Subscription } from 'rxjs';
+import { FormsModule } from '@angular/forms';
 // Interfaces
 interface RoutePosition {
   x: number;
@@ -14,7 +18,7 @@ interface LatLng {
 }
 
 interface ActiveRoute {
-  id: string;
+  id: number;
   name: string;
   userName: string;
   status: 'active' | 'paused' | 'emergency' | 'completed';
@@ -43,8 +47,8 @@ export class Caminos implements OnInit, OnDestroy {
   private liveMap: any = null;
   private liveMarker: any = null;
   private destMarker: any = null;
-  private routePolylines: Map<string, any> = new Map();
-  private destMarkers: Map<string, any> = new Map();
+  private routePolylines: Map<number, any> = new Map();
+  private destMarkers: Map<number, any> = new Map();
   private geocoder: any = null;
   private mapsLoaded = false;
   private directionsService: any = null;
@@ -54,9 +58,26 @@ export class Caminos implements OnInit, OnDestroy {
   // Track last geocode time per route to avoid spamming API
   private lastGeocodeAt: WeakMap<ActiveRoute, number> = new WeakMap();
 
-  constructor() { }
+  //socket 
+  private audioContext: AudioContext | null = null;
+  private scheduledTime = 0;
+  private audioSub: Subscription | null = null;
+  private collectedChunks: ArrayBuffer[] = [];
+  isListening = false;
+  downloadUrl: string | null = null;
+  token: string | null = null;
+  targetUserId: string | null = null;
+  private listenControlSub: Subscription | null = null;
+  private serverErrorSub: Subscription | null = null;
+  listenPending = false;
+  private remoteTarget: string | null = null;
+
+  //
+  constructor( private runRouteService: RunroutesService ,private socketService: SocketService) { }
 
   ngOnInit() {
+     try { this.token = localStorage.getItem('walksafe_token'); } catch (e) { this.token = null; }
+    this.getRunRouters();
     this.loadActiveRoutes();
     this.startLiveUpdates();
     this.loadGoogleMapsSdk()
@@ -68,6 +89,8 @@ export class Caminos implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+     try { this.stopListening(); } catch (e) {}
+    try { this.leaveRemote(); } catch (e) {}
     if (this.updateInterval) {
       clearInterval(this.updateInterval);
     }
@@ -84,7 +107,7 @@ export class Caminos implements OnInit, OnDestroy {
     // Mock data - replace with actual service call
     this.activeRoutes = [
       {
-        id: '1',
+        id: 1,
         name: 'Camino a Casa',
         userName: 'María González',
         status: 'active',
@@ -100,7 +123,7 @@ export class Caminos implements OnInit, OnDestroy {
         destination: { x: 80, y: 30 }
       },
       {
-        id: '2',
+        id: 2,
         name: 'Ruta al Trabajo',
         userName: 'Carlos Rodríguez',
         status: 'paused',
@@ -114,7 +137,7 @@ export class Caminos implements OnInit, OnDestroy {
         destination: { x: 20, y: 70 }
       },
       {
-        id: '3',
+        id: 3,
         name: 'Camino a Universidad',
         userName: 'Ana Martínez',
         status: 'active',
@@ -128,7 +151,7 @@ export class Caminos implements OnInit, OnDestroy {
         destination: { x: 90, y: 40 }
       },
       {
-        id: '4',
+        id: 4,
         name: 'Ruta Nocturna',
         userName: 'José López',
         status: 'emergency',
@@ -199,7 +222,7 @@ export class Caminos implements OnInit, OnDestroy {
 
   // Route selection
   selectRoute(route: ActiveRoute) {
-    // Clear visuals from previous selection and render new route
+    
     this.clearAllRouteVisuals();
     this.selectedRoute = route;
     if (this.mapsLoaded) {
@@ -209,7 +232,7 @@ export class Caminos implements OnInit, OnDestroy {
     }
   }
 
-  trackByRouteId(index: number, route: ActiveRoute): string {
+  trackByRouteId(index: number, route: ActiveRoute): number {
     return route.id;
   }
 
@@ -591,4 +614,209 @@ export class Caminos implements OnInit, OnDestroy {
       return null;
     }
   }
+
+  private async getRunRouters (){
+    this.runRouteService
+          .getRunroutes()
+          .subscribe({
+            next: async (resp) => {
+              this.activeRoutes = []
+
+              resp.data?.forEach((route: RouteRun) => {
+                          this.activeRoutes.push({
+                                    id: route.id,
+                                    name: route.route?.name ?? 'Sin nombre',
+                                    userName: route.user?.name ?? 'Usuario desconocido',
+                                    status: (route.endTime && route.startTime) ?  'completed' : 'active',
+                                    currentLocation: 'Av. Principal 123',
+                                    startTime: new Date(route.startTime),
+                                    lastUpdate: new Date(route.updatedAt),
+                                    progress: 1,
+                                    mapPosition: { x: 35, y: 45 },
+                                    mapLatLng: { lat: route.route?.startPlace?.lat ?? 0, lng: route.route?.startPlace?.long ?? 0  },
+                                    destinationLatLng: { lat: route.route?.endPlace?.lat ?? 0, lng: route.route?.endPlace?.long ?? 0 },
+                                  })                          
+                          });
+              console.log(resp)
+              },
+              error: async (err) => {
+              let message = 'Error al iniciar sesión';
+              if (err.error.msg) {
+                message = err.error.msg;
+              } 
+             
+            },
+          });
+  }
+
+    // (old toggleListening removed — UI uses toggleSelfListen)
+
+  startListening() {
+    // Do not re-init the socket here (that recreates connection and drops previous subs).
+    // Require the socket to be initialized earlier (toggleSelfListen ensures init).
+    if (!this.socketService.isInitialized()) {
+      console.error('[Listen] socket not initialized. Call toggleSelfListen() first or provide token.');
+      return;
+    }
+
+    const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+    if (!this.audioContext) this.audioContext = new AudioCtx();
+    const actx = this.audioContext;
+    if (!actx) {
+      console.error('AudioContext not available');
+      return;
+    }
+    this.scheduledTime = actx.currentTime + 0.1;
+
+    this.audioSub = this.socketService.getAudio().subscribe((arrayBuffer: ArrayBuffer) => {
+      try {
+        const float32 = new Float32Array(arrayBuffer);
+        this.collectedChunks.push(arrayBuffer.slice(0));
+        const buffer = actx.createBuffer(1, float32.length, actx.sampleRate);
+        buffer.getChannelData(0).set(float32);
+        const src = actx.createBufferSource();
+        src.buffer = buffer;
+        src.connect(actx.destination);
+        if (this.scheduledTime < actx.currentTime) this.scheduledTime = actx.currentTime + 0.05;
+        src.start(this.scheduledTime);
+        this.scheduledTime += buffer.duration;
+        src.onended = () => { try { src.disconnect(); } catch (e) {} };
+      } catch (err) {
+        console.error('Error playing PCM chunk', err);
+      }
+    });
+
+    this.isListening = true;
+  }
+
+  stopListening() {
+    if (this.audioSub) {
+      this.audioSub.unsubscribe();
+      this.audioSub = null;
+    }
+    this.isListening = false;
+    this.scheduledTime = 0;
+  }
+
+  // --- Remote control: ask server to join room for a specific user ---
+  // Single-button flow: toggle listening to a target user (asks for token/target if needed)
+  async toggleSelfListen() {
+    if (this.isListening) {
+      // stop and leave
+      this.leaveRemote();
+      return;
+    }
+
+    // Ensure we have a token (try localStorage; if missing ask)
+    try { this.token = this.token || localStorage.getItem('api_token'); } catch (e) { this.token = this.token || null; }
+    if (!this.token) {
+      const provided = window.prompt('Token (admin) — introduce token para autenticar:');
+      if (provided) {
+        this.token = provided;
+        try { localStorage.setItem('api_token', provided); } catch (e) {}
+      }
+    }
+
+    // Ensure socket initialized
+    try { const tk = this.token || undefined; this.socketService.init(tk); } catch (e) { console.warn('[Listen] socket init error', e); }
+
+    // Determine target user id to listen to
+    try { this.targetUserId = this.targetUserId || localStorage.getItem('listen_target'); } catch (e) { this.targetUserId = this.targetUserId || null; }
+    if (!this.targetUserId) {
+      const provided = window.prompt('Introduce el ID del usuario a escuchar:');
+      if (!provided) { console.warn('[Listen] no targetUserId provided'); return; }
+      this.targetUserId = provided;
+      try { localStorage.setItem('listen_target', provided); } catch (e) {}
+    }
+
+    // Prepare to receive confirmation: subscribe BEFORE emitting to avoid race
+    this.listenPending = true;
+    this.remoteTarget = this.targetUserId;
+
+    // cleanup previous subs
+    try { this.listenControlSub?.unsubscribe(); } catch (e) {}
+    try { this.serverErrorSub?.unsubscribe(); } catch (e) {}
+
+    this.listenControlSub = this.socketService.onListeningStarted().subscribe((data: any) => {
+      if (data && data.targetUserId === this.remoteTarget) {
+        console.log('[Listen] listening-started confirmed for', data.targetUserId);
+        this.listenPending = false;
+        this.startListening();
+      }
+    });
+
+    // Watch for server errors
+    this.serverErrorSub = this.socketService.onServerError().subscribe((err: any) => {
+      console.warn('[Listen] server error', err);
+      this.listenPending = false;
+    });
+
+    // Now request server to join the room
+    this.socketService.startListening(this.targetUserId);
+  }
+
+  leaveRemote() {
+    if (!this.remoteTarget && !this.targetUserId) return;
+    const t = this.remoteTarget || this.targetUserId!;
+    try { this.socketService.stopListening(t); } catch (e) {}
+    try { this.listenControlSub?.unsubscribe(); this.listenControlSub = null; } catch (e) {}
+    try { this.serverErrorSub?.unsubscribe(); this.serverErrorSub = null; } catch (e) {}
+    this.remoteTarget = null;
+    this.listenPending = false;
+    // stop local playback
+    this.stopListening();
+  }
+
+  download() {
+    if (!this.collectedChunks || this.collectedChunks.length === 0) return;
+    const sampleRate = this.audioContext ? this.audioContext.sampleRate : 48000;
+    const blob = this.mergeFloat32ToWav(this.collectedChunks, sampleRate);
+    if (this.downloadUrl) try { URL.revokeObjectURL(this.downloadUrl); } catch (e) {}
+    this.downloadUrl = URL.createObjectURL(blob);
+  }
+
+  // saveToken removed (token is stored during prompt flow)
+
+  private mergeFloat32ToWav(buffers: ArrayBuffer[], sampleRate: number) {
+    let totalSamples = 0;
+    const floatArrays: Float32Array[] = [];
+    for (const ab of buffers) {
+      const f = new Float32Array(ab);
+      floatArrays.push(f);
+      totalSamples += f.length;
+    }
+    const buffer = new ArrayBuffer(44 + totalSamples * 2);
+    const view = new DataView(buffer);
+
+    function writeString(dataview: DataView, offset: number, str: string) {
+      for (let i = 0; i < str.length; i++) {
+        dataview.setUint8(offset + i, str.charCodeAt(i));
+      }
+    }
+
+    writeString(view, 0, 'RIFF');
+    view.setUint32(4, 36 + totalSamples * 2, true);
+    writeString(view, 8, 'WAVE');
+    writeString(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeString(view, 36, 'data');
+    view.setUint32(40, totalSamples * 2, true);
+
+    let offset = 44;
+    for (const f of floatArrays) {
+      for (let i = 0; i < f.length; i++, offset += 2) {
+        const s = Math.max(-1, Math.min(1, f[i]));
+        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+      }
+    }
+
+    return new Blob([view], { type: 'audio/wav' });
+  }
+
 }

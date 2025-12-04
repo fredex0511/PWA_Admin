@@ -1,0 +1,1 @@
+export type EvidenceType = 'photo' | 'audio'

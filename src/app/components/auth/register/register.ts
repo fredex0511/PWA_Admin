@@ -1,22 +1,42 @@
-import { Component } from '@angular/core';
-import { AlertController } from '@ionic/angular';
+import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
+import { IonicModule, ToastController, AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { AuthService } from 'src/app/services/auth';
+import { PlatformDetectorService } from '../../../services/platform-detector';
 
 @Component({
   selector: 'app-register',
   imports: [IonicModule, FormsModule, CommonModule],
   templateUrl: './register.html',
-  styleUrl: './register.css'
+  styleUrl: './register.css',
 })
-export class Register {
-  model: { name: string; email: string; password: string; confirmPassword: string } = { name: '', email: '', password: '', confirmPassword: '' };
+export class Register implements OnInit {
+  model: {
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+  } = { name: '', email: '', password: '', confirmPassword: '' };
+  isMobile: boolean = false;
 
-  constructor(private router: Router, private alertController: AlertController) {}
+  constructor(
+    private router: Router,
+    private platformDetector: PlatformDetectorService,
+    private toastController: ToastController,
+    private alertController: AlertController,
+    private renderer: Renderer2,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit() {
+    this.isMobile = this.platformDetector.isMobile();
+    // isMobile determined
+  }
 
   async onSubmit() {
+    this.isMobile = this.platformDetector.isMobile();
     if (!this.model.name || !this.model.email || !this.model.password) {
       await this.presentAlert('Por favor completa todos los campos.');
       return;
@@ -26,24 +46,105 @@ export class Register {
       await this.presentAlert('Las contraseñas no coinciden.');
       return;
     }
+    const data = {
+      name: this.model.name,
+      email: this.model.email,
+      password: this.model.password,
+      password_confirmation: this.model.confirmPassword,
+    };
+    // Llamar al servicio de registro
+    this.authService.register(data).subscribe({
+      next: async (resp) => {
+        try {
+          this.clearForm();
+          localStorage.setItem('walksafe_user_logged_in', 'true');
+          localStorage.setItem(
+            'walksafe_user_email',
+            resp.data!.user?.email || this.model.email
+          );
+          localStorage.setItem('walksafe_token', resp.data!.token?.token || '');
+          localStorage.setItem(
+            'walksafe_token_type',
+            resp.data!.token?.type || ''
+          );
+          localStorage.setItem(
+            'walksafe_token_expires_at',
+            resp.data!.token?.expires_at || ''
+          );
+          localStorage.setItem(
+            'walksafe_user',
+            JSON.stringify(resp.data!.user || {})
+          );
 
-    console.log('Register submit', this.model);
-    await this.presentAlert(`Cuenta creada para ${this.model.email} (simulado)`);
-    // After registration succeed, navigate to login or dashboard
-    this.goToLogin();
+          await this.presentAlert(`Cuenta creada para ${data.email}`);
+          if (this.isMobile && resp.data!.user?.role_id === 3) {
+            const toast = await this.toastController.create({
+              message: 'Para mejor experiencia instala la app de WalkSafe',
+              duration: 4000,
+              position: 'bottom',
+              color: 'primary',
+            });
+            await toast.present();
+            this.router.navigate(['/dashboard-mobile'], { replaceUrl: true });
+          } else {
+            const toastError = await this.toastController.create({
+              message: 'Ingresa desde el movil a la app de WalkSafe',
+              duration: 2000,
+              position: 'top',
+              color: 'danger',
+            });
+            toastError.present();
+          }
+        } catch (e) {
+          // Error handling omitted from logs
+        }
+      },
+      error: async (err) => {
+        let message = 'Error al registar usuario';
+        console.log(err)
+        if (err.status === 422) {
+          const errors = err.error?.msg?.errors;
+
+          if (Array.isArray(errors)) {
+            const emailError = errors.find((e: any) => e.field === 'email' && e.rule === 'unique');
+            if (emailError) {
+              message = 'correo electronico en uso';
+            }
+
+          }
+        }
+
+        // Si el msg viene como string (caso login fallido 401)
+        if (typeof err.error?.msg === 'string') {
+          message = err.error.msg;
+        }
+
+        const alert = await this.alertController.create({
+          header: 'Error',
+          message,
+          buttons: ['OK'],
+        });
+
+        await alert.present();
+      },
+    });
   }
 
   async presentAlert(message: string) {
     const alert = await this.alertController.create({
       header: 'Registro',
       message,
-      buttons: ['OK']
+      buttons: ['OK'],
     });
     await alert.present();
   }
 
   goToLogin() {
-    console.log('goToLogin called');
-    this.router.navigate(['/'], { replaceUrl: true }).catch(err => console.error('Navigation failed:', err));
+    this.router.navigate(['/'], { replaceUrl: true }).catch((/* err */) => {
+      // Navigation failure ignored
+    });
+  }
+  private clearForm() {
+    this.model = { name: '', email: '', password: '', confirmPassword: '' };
   }
 }

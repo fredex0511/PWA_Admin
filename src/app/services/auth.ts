@@ -4,6 +4,10 @@ import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
 import { LoginResponse } from '../interfaces/apiresponse/login-response';
 import { LoginRequest } from '../interfaces/apirequest/login-request';
+import { RegisterRequest } from '../interfaces/apirequest/register-request';
+import { RegisterResponse} from '../interfaces/apiresponse/register-response';
+import { ApiResponse } from '../interfaces/apiresponse/api-response';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -12,8 +16,12 @@ export class AuthService {
 
   constructor(private http: HttpClient) { }
 
-  login(data:LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.API_URL}login`, data);
+  login(data:LoginRequest): Observable<ApiResponse<LoginResponse>> {
+    return this.http.post<ApiResponse<LoginResponse>>(`${this.API_URL}login`, data);
+  }
+
+  register(data:RegisterRequest) : Observable<ApiResponse<RegisterResponse>> {
+    return this.http.post<ApiResponse<RegisterResponse>>(`${this.API_URL}register`, data);
   }
 
   logout(): Observable<any> {

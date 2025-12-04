@@ -2,17 +2,19 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
+import { ApiResponse } from '../interfaces/apiresponse/api-response';
+import { RouteRun } from '../interfaces/route-run';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RunroutesService {
-  API_URL = environment.API_URL + 'runroutes/';
+  API_URL = environment.api + 'runroutes/';
 
   constructor(private http: HttpClient) { }
 
-  getRunroutes(): Observable<any> {
-    return this.http.get(this.API_URL);
+  getRunroutes(): Observable<ApiResponse<RouteRun[]>> {
+    return this.http.get<ApiResponse<RouteRun[]>>(this.API_URL);
   }
 
   showRunroute(id: number): Observable<any> {
@@ -23,11 +25,15 @@ export class RunroutesService {
     return this.http.put(this.API_URL + id, data);
   }
 
-  createRunroute(data: any): Observable<any> { 
-    return this.http.post(this.API_URL, data);
+  createRunroute(data: any): Observable<ApiResponse<RouteRun>> { 
+    return this.http.post<ApiResponse<RouteRun>>(this.API_URL, data);
   }
 
   deleteRunroute(id: number): Observable<any> {
     return this.http.delete(this.API_URL + id);
+  }
+
+  finishedRunRoute(id: number): Observable<ApiResponse<RouteRun>> {
+    return this.http.put<ApiResponse<RouteRun>>(this.API_URL + id + '/finished',{});
   }
 }
