@@ -133,13 +133,12 @@ export class Login implements OnInit, OnDestroy {
               'walksafe_user',
               JSON.stringify(resp.data!.user || {})
             );
-            this.router.navigate(['/dashboard-mobile'], { replaceUrl: true });
-            return
+           
             if (
               (resp.data!.user.role_id === 2 || resp.data!.user.role_id === 1) &&
               !this.isMobile
             ) {
-               this.router.navigate(['/dashboard-mobile'], { replaceUrl: true });
+               this.router.navigate(['/dashboard'], { replaceUrl: true });
             } else if (
               resp.data!.user.role_id !== 1 &&
               resp.data!.user.role_id !== 2 &&

@@ -42,6 +42,7 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
   private mapsLoaded = false;
   private autocompleteService: any = null;
   private runrouterActive : RouteRun | null = null
+  private locationPollingInterval: any = null;
 
   //sokcet
    private streamingContext: AudioContext | null = null;
@@ -159,6 +160,10 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
     }
     if (this.mobileMap) {
       // nothing specific to destroy for Google Maps API
+    }
+    if (this.locationPollingInterval) {
+      clearInterval(this.locationPollingInterval);
+      this.locationPollingInterval = null;
     }
   }
 
@@ -316,6 +321,17 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
   }
 
   endActivePath() {
+    // Detener transmisión de audio automáticamente
+    if (this.isStreaming) {
+      this.stopStreaming();
+    }
+    
+    // Detener polling de ubicación
+    if (this.locationPollingInterval) {
+      clearInterval(this.locationPollingInterval);
+      this.locationPollingInterval = null;
+    }
+    
     this.activePath = null;
     this.runRouteService
       .finishedRunRoute(this.runrouterActive!.id)
@@ -397,6 +413,10 @@ this.runRouteService
         next: async (resp) => {
           
             this.runrouterActive = resp.data!
+            // Iniciar transmisión de audio automáticamente
+            await this.startStreaming();
+            // Iniciar polling de ubicación
+            this.startLocationPolling();
           },
           error: async (err) => {
           let message = 'Error al iniciar sesión';
@@ -424,7 +444,7 @@ this.runRouteService
   private async startStreaming() {
     // ensure socket initialized with token before streaming
     try {
-      const tk = this.token || (localStorage.getItem('api_token') ?? undefined);
+      const tk = this.token || (localStorage.getItem('walksafe_token') ?? undefined);
       this.socketService.init(tk ?? undefined);
     } catch (e) { console.warn('[Send] socket init error', e); }
     try {
@@ -493,5 +513,37 @@ this.runRouteService
     this.isStreaming = false;
     console.log('[Send] stopped streaming');
   }
-  
+
+  private startLocationPolling() {
+    // Obtener ubicación inicial
+    this.sendCurrentLocation();
+
+    // Configurar polling cada segundo
+    this.locationPollingInterval = setInterval(() => {
+      this.sendCurrentLocation();
+    }, 1000);
+  }
+
+  private sendCurrentLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          this.socketService.sendLocation({
+            lat: latitude,
+            long: longitude,
+            timestamp: new Date().toISOString()
+          });
+          console.log('[Location] Enviada ubicación:', { lat: latitude, long: longitude });
+        },
+        (error) => {
+          console.warn('[Location] Error obteniendo ubicación:', error);
+        },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+      );
+    } else {
+      console.warn('[Location] Geolocation no disponible');
+    }
+  }
+
 }

@@ -4,9 +4,9 @@
 
 export const environment = {
   production: false,
-  apiAUTH: 'http://127.0.0.1:3333/api/v1/auth/',
-  api: 'http://127.0.0.1:3333/api/v1/',
-  socket: ' http://127.0.0.1:3333'
+  apiAUTH: 'https://vkf1xfcn-3333.usw3.devtunnels.ms/api/v1/auth/',
+  api: 'https://vkf1xfcn-3333.usw3.devtunnels.ms/api/v1/',
+  socket: 'https://vkf1xfcn-3333.usw3.devtunnels.ms'
 };
 
 /*

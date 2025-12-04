@@ -169,4 +169,43 @@ const handler = async (...args: any[]) => {
     });
   }
 
+  // Enviar ubicación desde el usuario (cliente móvil)
+sendLocation(location: { lat: number; long: number; timestamp?: string } | any) {
+  // Normaliza: algunos clientes envían directamente location, otros lo envuelven
+  const payload = (location && location.lat !== undefined) ? { location } : { location };
+  this.socket?.emit('location-update', payload);
+}
+
+
+// Observable para recibir actualizaciones de ubicación (admin escuchando)
+onLocationUpdate(): Observable<{ fromUserId: number; location: any }> {
+  return new Observable(observer => {
+    const handler = (data: any) => {
+      // El servidor reenvía: { fromUserId, location }
+      observer.next(data);
+    };
+    this.socket?.on('location-update', handler);
+    return () => { this.socket?.off('location-update', handler); };
+  });
+}
+
+// Observable para cuando un recorrido inicia (global o en sala listen:{userId})
+onRouteRunStarted(): Observable<any> {
+  return new Observable(observer => {
+    const handler = (data: any) => observer.next(data);
+    this.socket?.on('route-run-started', handler);
+    return () => { this.socket?.off('route-run-started', handler); };
+  });
+}
+
+// Observable para cuando un recorrido finaliza
+onRouteRunFinished(): Observable<any> {
+  return new Observable(observer => {
+    const handler = (data: any) => observer.next(data);
+    this.socket?.on('route-run-finished', handler);
+    return () => { this.socket?.off('route-run-finished', handler); };
+  });
+}
+
+
 }

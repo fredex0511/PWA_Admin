@@ -6,8 +6,8 @@ export interface RouteRun {
   id: number
   routeId: number
   userId: number
-  startTime: string
-  endTime: string
+  start_time: string
+  end_time: string
   route?: Route | null
   user?: User | null
   incidents?: Incident[]

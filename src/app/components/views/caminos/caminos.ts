@@ -623,21 +623,41 @@ export class Caminos implements OnInit, OnDestroy {
               this.activeRoutes = []
 
               resp.data?.forEach((route: RouteRun) => {
-                          this.activeRoutes.push({
+                console.log(resp)
+                console.log(route.end_time)
+                          if(!route.end_time){
+                                    this.activeRoutes.push({
                                     id: route.id,
                                     name: route.route?.name ?? 'Sin nombre',
                                     userName: route.user?.name ?? 'Usuario desconocido',
-                                    status: (route.endTime && route.startTime) ?  'completed' : 'active',
+                                    status:  'active',
                                     currentLocation: 'Av. Principal 123',
-                                    startTime: new Date(route.startTime),
+                                    startTime: new Date(route.start_time),
                                     lastUpdate: new Date(route.updatedAt),
                                     progress: 1,
                                     mapPosition: { x: 35, y: 45 },
                                     mapLatLng: { lat: route.route?.startPlace?.lat ?? 0, lng: route.route?.startPlace?.long ?? 0  },
                                     destinationLatLng: { lat: route.route?.endPlace?.lat ?? 0, lng: route.route?.endPlace?.long ?? 0 },
-                                  })                          
+                                  })   
+                          }
+                                                 
                           });
               console.log(resp)
+              
+              // Auto-seleccionar la primera ruta y empezar a escuchar
+              if (this.activeRoutes.length > 0) {
+                const firstRoute = this.activeRoutes[0];
+                this.selectRoute(firstRoute);
+                
+                // Obtener el ID del usuario de la primera ruta para escuchar
+                if (resp.data && resp.data.length > 0) {
+                  this.targetUserId = resp.data[0].user?.id?.toString() ?? null;
+                  if (this.targetUserId) {
+                    // Inicializar socket y empezar a escuchar automáticamente
+                    await this.startAutoListen();
+                  }
+                }
+              }
               },
               error: async (err) => {
               let message = 'Error al iniciar sesión';
@@ -647,6 +667,57 @@ export class Caminos implements OnInit, OnDestroy {
              
             },
           });
+  }
+
+  private async startAutoListen() {
+    try { 
+      this.token = this.token || localStorage.getItem('walksafe_token'); 
+    } catch (e) { 
+      this.token = this.token || null; 
+    }
+
+    if (!this.token) {
+      console.warn('[Auto Listen] No token available');
+      return;
+    }
+
+    // Inicializar socket con el token
+    try { 
+      this.socketService.init(this.token); 
+    } catch (e) { 
+      console.warn('[Auto Listen] socket init error', e); 
+    }
+
+    if (!this.targetUserId) {
+      console.warn('[Auto Listen] No targetUserId available');
+      return;
+    }
+
+    // Preparar para recibir confirmación
+    this.listenPending = true;
+    this.remoteTarget = this.targetUserId;
+
+    // Limpiar suscripciones previas
+    try { this.listenControlSub?.unsubscribe(); } catch (e) {}
+    try { this.serverErrorSub?.unsubscribe(); } catch (e) {}
+
+    // Suscribirse a la confirmación de inicio de escucha
+    this.listenControlSub = this.socketService.onListeningStarted().subscribe((data: any) => {
+      if (data && data.targetUserId === this.remoteTarget) {
+        console.log('[Auto Listen] listening-started confirmed for', data.targetUserId);
+        this.listenPending = false;
+        this.startListening();
+      }
+    });
+
+    // Vigilar errores del servidor
+    this.serverErrorSub = this.socketService.onServerError().subscribe((err: any) => {
+      console.warn('[Auto Listen] server error', err);
+      this.listenPending = false;
+    });
+
+    // Solicitar al servidor que se une a la sala
+    this.socketService.startListening(this.targetUserId);
   }
 
     // (old toggleListening removed — UI uses toggleSelfListen)
@@ -708,12 +779,12 @@ export class Caminos implements OnInit, OnDestroy {
     }
 
     // Ensure we have a token (try localStorage; if missing ask)
-    try { this.token = this.token || localStorage.getItem('api_token'); } catch (e) { this.token = this.token || null; }
+    try { this.token = this.token || localStorage.getItem('walksafe_token'); } catch (e) { this.token = this.token || null; }
     if (!this.token) {
       const provided = window.prompt('Token (admin) — introduce token para autenticar:');
       if (provided) {
         this.token = provided;
-        try { localStorage.setItem('api_token', provided); } catch (e) {}
+        try { localStorage.setItem('walksafe_token', provided); } catch (e) {}
       }
     }
 
