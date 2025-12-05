@@ -1,0 +1,66 @@
+<div class="contacts-form-update-container">
+  <div class="form-header">
+    <h3>Editar Contacto</h3>
+  </div>
+  
+  <ion-item>
+    <ion-label position="stacked">Nombre</ion-label>
+    <ion-input
+      [(ngModel)]="editedContact.name"
+      placeholder="Nombre del contacto"
+      type="text"
+    ></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">Teléfono</ion-label>
+    <ion-input
+      [(ngModel)]="editedContact.phone"
+      placeholder="Número de teléfono"
+      type="tel"
+    ></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">Email</ion-label>
+    <ion-input
+      [(ngModel)]="editedContact.email"
+      placeholder="Correo electrónico"
+      type="email"
+    ></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">Dirección</ion-label>
+    <ion-input
+      [(ngModel)]="editedContact.direction"
+      placeholder="Buscar dirección"
+      (ionInput)="onSearchDirection($event)"
+      type="text"
+    ></ion-input>
+  </ion-item>
+
+  <div class="suggestions-list" *ngIf="directionSuggestions.length > 0">
+    <div
+      *ngFor="let suggestion of directionSuggestions"
+      class="suggestion-item"
+      (click)="onSelectDirection(suggestion)"
+    >
+      {{ suggestion.description }}
+    </div>
+  </div>
+
+  <div class="form-buttons">
+    <ion-button expand="block" color="danger" (click)="onDelete()">
+      <ion-icon name="trash-outline" slot="start"></ion-icon>
+      Eliminar
+    </ion-button>
+    <ion-button expand="block" color="primary" (click)="onSave()">
+      <ion-icon name="save-outline" slot="start"></ion-icon>
+      Guardar Cambios
+    </ion-button>
+    <ion-button expand="block" color="medium" (click)="onCancel()">
+      Cancelar
+    </ion-button>
+  </div>
+</div>

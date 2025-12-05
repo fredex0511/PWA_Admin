@@ -1,0 +1,80 @@
+.contacts-form-update-container {
+  background: rgba(146, 190, 224, 0.08);
+  border: 1px solid #92BEE0;
+  border-radius: 1rem;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.form-header {
+  margin-bottom: 16px;
+  text-align: center;
+
+  h3 {
+    color: #92BEE0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0;
+  }
+}
+
+ion-item {
+  --background: transparent;
+  --border-color: #92BEE0;
+  --color: #fff;
+  margin-bottom: 12px;
+  border-radius: 0.5rem;
+  border: 1px solid #92BEE0;
+  background: rgba(146, 190, 224, 0.04);
+}
+
+ion-label {
+  color: #92BEE0 !important;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+ion-input {
+  --color: #fff !important;
+  --placeholder-color: rgba(255, 255, 255, 0.5) !important;
+  color: #fff !important;
+}
+
+.suggestions-list {
+  background: rgba(146, 190, 224, 0.08);
+  border: 1px solid #92BEE0;
+  border-radius: 0.5rem;
+  margin-bottom: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.suggestion-item {
+  padding: 10px 12px;
+  color: #fff;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(146, 190, 224, 0.2);
+  transition: background 0.2s;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: rgba(146, 190, 224, 0.15);
+  }
+}
+
+.form-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+ion-button {
+  --color: #fff;
+  font-weight: 600;
+  text-transform: none;
+  height: 44px;
+}

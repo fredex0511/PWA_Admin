@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class EvidencesService {
-  API_URL = environment.API_URL + 'evidences/';
+  API_URL = environment.api + 'evidences/';
 
   constructor(private http: HttpClient) { }
 
@@ -29,5 +29,11 @@ export class EvidencesService {
 
   deleteEvidence(id: number): Observable<any> {
     return this.http.delete(this.API_URL + id);
+  }
+  
+  getevidence(id: number): Observable<Blob> {
+    return this.http.get(this.API_URL + id + '/file', { 
+      responseType: 'blob' 
+    });
   }
 }

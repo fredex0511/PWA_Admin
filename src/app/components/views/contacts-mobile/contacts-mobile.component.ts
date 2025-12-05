@@ -4,17 +4,20 @@ import { IonicModule, AlertController } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { ContactCreate } from 'src/app/interfaces/contact';
 import { ContactsFormComponent } from '../contacts-form/contacts-form.component';
+import { ContactsFormUpdateComponent } from '../contacts-form-update/contacts-form-update.component';
 import { ContactsService } from 'src/app/services/contacts';
 
 @Component({
   selector: 'app-contacts-mobile',
   templateUrl: './contacts-mobile.component.html',
   styleUrls: ['./contacts-mobile.component.css'],
-  imports: [CommonModule, IonicModule, FormsModule, ContactsFormComponent],
+  imports: [CommonModule, IonicModule, FormsModule, ContactsFormComponent, ContactsFormUpdateComponent],
 })
 export class ContactsMobileComponent  implements OnInit {
   userContacts: any[] = [];
   addingContact = false;
+  editingContact = false;
+  selectedContact: any = null;
   newContact: ContactCreate = { name: '', direction:'',email:'',phone:''};
   directionSuggestions: any[] = [];
   private autocompleteService: any = null;
@@ -119,6 +122,120 @@ export class ContactsMobileComponent  implements OnInit {
     }
   }
 
+  editContact(contact: any) {
+    this.selectedContact = { ...contact };
+    this.editingContact = true;
+    this.addingContact = false;
+  }
 
+  updateContact(updatedContact: any) {
+    if (updatedContact.name && updatedContact.direction) {
+      this.contactsService.updateContact(updatedContact.id, updatedContact).subscribe({
+        next: async (resp) => {
+          console.log('Contacto actualizado:', resp);
+          this.getContacts();
+          this.editingContact = false;
+          this.selectedContact = null;
+          this.directionSuggestions = [];
+          
+          const alert = await this.alertController.create({
+            header: 'Éxito',
+            message: 'Contacto actualizado correctamente',
+            buttons: ['OK'],
+          });
+          await alert.present();
+        },
+        error: async (err) => {
+          let message = 'Error al actualizar contacto';
+          if (err.error?.msg) {
+            message = err.error.msg;
+          }
+          const alert = await this.alertController.create({
+            header: 'Error',
+            message,
+            buttons: ['OK'],
+          });
+          await alert.present();
+        },
+      });
+    }
+  }
+
+  async deleteContact() {
+    if (!this.selectedContact) return;
+
+    const confirmAlert = await this.alertController.create({
+      header: 'Confirmar Eliminación',
+      message: `¿Estás seguro de eliminar el contacto "${this.selectedContact.name}"?`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          handler: () => {
+            this.contactsService.deleteContact(this.selectedContact.id).subscribe({
+              next: async (resp) => {
+                console.log('Contacto eliminado:', resp);
+                
+                // Cerrar el formulario inmediatamente
+                this.ngZone.run(() => {
+                  this.editingContact = false;
+                  this.selectedContact = null;
+                  this.directionSuggestions = [];
+                });
+                
+                // Recargar contactos
+                this.getContacts();
+                
+                // Mostrar alerta de éxito
+                const alert = await this.alertController.create({
+                  header: 'Éxito',
+                  message: 'Contacto eliminado correctamente',
+                  buttons: ['OK'],
+                });
+                await alert.present();
+              },
+              error: async (err) => {
+                let message = 'Error al eliminar contacto';
+                if (err.error?.msg) {
+                  message = err.error.msg;
+                }
+                const alert = await this.alertController.create({
+                  header: 'Error',
+                  message,
+                  buttons: ['OK'],
+                });
+                await alert.present();
+              },
+            });
+          }
+        }
+      ]
+    });
+
+    await confirmAlert.present();
+  }
+
+  cancelEditing() {
+    this.editingContact = false;
+    this.selectedContact = null;
+    this.directionSuggestions = [];
+  }
+
+  onSearchDirectionUpdate(event: any) {
+    this.onSearchDirection(event);
+  }
+
+  onSelectDirectionUpdate(suggestion: any) {
+    if (this.selectedContact) {
+      this.selectedContact.direction = suggestion.description;
+      // Forzar actualización en el formulario hijo
+      this.selectedContact = { ...this.selectedContact };
+    }
+    this.directionSuggestions = [];
+  }
 
 }

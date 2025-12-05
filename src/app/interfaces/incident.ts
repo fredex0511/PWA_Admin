@@ -1,5 +1,6 @@
 import { Place } from "./place"
 import { RouteRun } from "./route-run"
+import { Evidence } from "./evidence"
 
 export interface Incident {
   id: number
@@ -8,9 +9,11 @@ export interface Incident {
   routeRunId: number
   place?: Place | null
   routeRun?: RouteRun | null
+  evidences:Evidence[]
   createdAt: string
   updatedAt: string
   deletedAt?: string | null
+  description: string| null
 }
 
 export interface IncidentSnake {

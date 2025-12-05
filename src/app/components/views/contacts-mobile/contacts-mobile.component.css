@@ -35,6 +35,7 @@
   padding: 12px 8px;
   border-bottom: 1px solid rgba(146, 190, 224, 0.3);
   transition: background 0.2s;
+  cursor: pointer;
 }
 .contact-item:last-child {
   border-bottom: none;
@@ -42,6 +43,15 @@
 .contact-item:hover {
   background: rgba(146,190,224,0.07);
   border-radius: 0.5rem;
+}
+.edit-icon {
+  color: #92BEE0;
+  font-size: 1.3rem;
+  margin-left: 8px;
+  transition: color 0.2s;
+}
+.contact-item:hover .edit-icon {
+  color: #ff6b35;
 }
 .contact-info {
   display: flex;
@@ -70,7 +80,7 @@
   content: '• ';
   margin-right: 4px;
 }
-.add-contact-form-card {
+.add-contact-form-card, .edit-contact-form-card {
   background: rgba(146, 190, 224, 0.08);
   border: 1px solid #92BEE0;
   border-radius: 1rem;

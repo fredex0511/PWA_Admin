@@ -199,6 +199,190 @@ ion-button[expand="block"] {
 ion-button, ion-icon {
   --color: #92BEE0 !important;
 }
+
+/* Incident Detail Modal */
+.incident-detail-modal {
+  --width: 95%;
+  --height: 95%;
+  --border-radius: 1rem;
+}
+
+.incident-modal-content {
+  --background: #000;
+  padding: 12px;
+}
+
+.incident-detail-section {
+  background: rgba(146, 190, 224, 0.08);
+  border: 1px solid #92BEE0;
+  border-radius: 0.75rem;
+  padding: 12px 10px;
+  margin-bottom: 16px;
+}
+
+.incident-card {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.incident-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+}
+
+.incident-arrow {
+  color: #ff6b35;
+  font-size: 1.2rem;
+}
+
+.incident-evidences {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: #92BEE0;
+  font-size: 0.85rem;
+}
+
+.incident-evidences ion-icon {
+  font-size: 1rem;
+}
+
+/* Evidences Grid */
+.loading-evidences {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #92BEE0;
+}
+
+.loading-evidences ion-spinner {
+  margin-bottom: 10px;
+}
+
+.evidences-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.evidence-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(146, 190, 224, 0.3);
+  border-radius: 0.5rem;
+  padding: 10px;
+  overflow: hidden;
+}
+
+.evidence-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: #92BEE0;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.evidence-icon {
+  font-size: 1.3rem;
+  color: #ff6b35;
+}
+
+.evidence-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #fff;
+}
+
+/* Image Preview */
+.evidence-preview {
+  width: 100%;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  margin-bottom: 8px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.evidence-preview img {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: contain;
+  display: block;
+}
+
+/* Audio Player */
+.evidence-audio {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.evidence-audio audio {
+  width: 100%;
+  height: 40px;
+  border-radius: 0.5rem;
+  background: rgba(146, 190, 224, 0.1);
+}
+
+/* Video Player */
+.evidence-video {
+  width: 100%;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  margin-bottom: 8px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.evidence-video video {
+  width: 100%;
+  max-height: 300px;
+  display: block;
+}
+
+/* Evidence Info */
+.evidence-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #92BEE0;
+  opacity: 0.8;
+}
+
+.evidence-size {
+  font-weight: 600;
+}
+
+.evidence-type {
+  font-style: italic;
+}
+
+/* No Evidences Message */
+.no-evidences-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #92BEE0;
+  text-align: center;
+}
+
+.no-evidence-icon {
+  font-size: 4rem;
+  color: rgba(146, 190, 224, 0.3);
+  margin-bottom: 16px;
+}
+
+.no-evidences-message p {
+  font-size: 0.95rem;
+  opacity: 0.7;
+}
 ion-button[color="danger"] {
   --background: #ff6b35 !important;
   --color: #fff !important;

@@ -8,7 +8,7 @@
             <ion-icon name="add-circle-outline"></ion-icon>
           </ion-button>
         </div>
-        <div *ngFor="let contact of userContacts" class="contact-item">
+        <div *ngFor="let contact of userContacts" class="contact-item" (click)="editContact(contact)">
           <div class="contact-info">
             <div class="contact-nombre">{{ contact.name }}</div>
             <div class="contact-details">
@@ -17,6 +17,7 @@
               <span *ngIf="contact.direction">{{ contact.direction }} </span>
             </div>
           </div>
+          <ion-icon name="create-outline" class="edit-icon"></ion-icon>
         </div>
       </div>
 
@@ -30,6 +31,19 @@
           (selectDirection)="onSelectDirection($event)"
          >
         </app-contacts-form>
+      </div>
+
+      <div *ngIf="editingContact && selectedContact" class="edit-contact-form-card">
+        <app-contacts-form-update
+          [contact]="selectedContact"
+          [directionSuggestions]="directionSuggestions"
+          (save)="updateContact($event)"
+          (cancel)="cancelEditing()"
+          (delete)="deleteContact()"
+          (searchDirection)="onSearchDirectionUpdate($event)"
+          (selectDirection)="onSelectDirectionUpdate($event)"
+        >
+        </app-contacts-form-update>
       </div>
     
   </div>
