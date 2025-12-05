@@ -529,6 +529,19 @@ this.runRouteService
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
+          
+          // Actualizar la ubicación del path activo
+          if (this.activePath) {
+            this.activePath.originLatLng = {
+              lat: latitude,
+              lng: longitude
+            };
+            
+            // Actualizar el marcador en el mapa si está visible
+            this.placeMobileMarker(this.activePath);
+          }
+          
+          // Enviar ubicación por socket
           this.socketService.sendLocation({
             lat: latitude,
             long: longitude,

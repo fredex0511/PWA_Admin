@@ -1,0 +1,205 @@
+
+.history-mobile-container {
+  padding: 18px 8px 0 8px;
+  background: #000;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.history-list-card {
+  background: rgba(146, 190, 224, 0.08);
+  border: 1px solid #92BEE0;
+  border-radius: 1rem;
+  box-shadow: 0 0.25rem 0.9375rem rgba(0,0,0,0.6), 0 0 0.625rem rgba(146,190,224,0.15);
+  padding: 14px 8px 8px 8px;
+  margin-bottom: 18px;
+}
+.history-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.1rem;
+  color: #92BEE0;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.history-list-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #92BEE0;
+}
+.route-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 8px;
+  border-bottom: 1px solid rgba(146, 190, 224, 0.3);
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.route-item:last-child {
+  border-bottom: none;
+}
+.route-item:hover {
+  background: rgba(146,190,224,0.07);
+  border-radius: 0.5rem;
+}
+.view-icon {
+  color: #92BEE0;
+  font-size: 1.2rem;
+}
+
+/* Modal Styles */
+.route-details-modal {
+  --width: 90%;
+  --height: 90%;
+  --border-radius: 1rem;
+}
+
+.modal-content {
+  --background: #000;
+}
+
+.details-section {
+  background: rgba(146, 190, 224, 0.08);
+  border: 1px solid #92BEE0;
+  border-radius: 0.75rem;
+  padding: 12px 10px;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #92BEE0;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.incident-badge {
+  background: #ff6b35;
+  color: #fff;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.label-strong {
+  font-weight: 700;
+  color: #92BEE0;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.label-value {
+  color: #fff;
+  font-size: 0.95rem;
+  margin-top: 4px;
+}
+
+.incident-card {
+  background: rgba(255, 107, 53, 0.1);
+  border: 1px solid rgba(255, 107, 53, 0.3);
+  border-radius: 0.5rem;
+  padding: 10px;
+  margin-bottom: 8px;
+}
+
+.incident-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.incident-type {
+  background: #ff6b35;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.incident-date {
+  color: #92BEE0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.incident-description {
+  color: #fff;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.no-items-message {
+  text-align: center;
+  padding: 12px 8px;
+  color: #92BEE0;
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+.route-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+.route-nombre {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #fff;
+  margin-bottom: 2px;
+}
+.route-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.9rem;
+  color: #92BEE0;
+  line-height: 1.4;
+}
+.route-details span {
+  display: block;
+}
+.route-details span::before {
+  content: '• ';
+  margin-right: 4px;
+}
+.no-routes-message {
+  padding: 20px 8px;
+  text-align: center;
+  color: #92BEE0;
+  font-size: 0.95rem;
+  opacity: 0.7;
+}
+
+ion-item, ion-input, ion-label {
+  --background: transparent !important;
+  --color: #fff !important;
+  color: #fff !important;
+}
+ion-item {
+  border-radius: 0.5rem;
+  border: 1px solid #92BEE0;
+  margin-bottom: 10px;
+  background: rgba(146,190,224,0.04) !important;
+}
+ion-button[expand="block"] {
+  margin-top: 10px;
+}
+ion-button, ion-icon {
+  --color: #92BEE0 !important;
+}
+ion-button[color="danger"] {
+  --background: #ff6b35 !important;
+  --color: #fff !important;
+}

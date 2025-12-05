@@ -1,0 +1,67 @@
+.add-path-form {
+  background: transparent;
+  padding: 0;
+}
+
+ion-list-header {
+  font-size: 1.1rem;
+  color: #92BEE0;
+  font-weight: 700;
+  padding: 0 0 0.5rem 0;
+}
+
+ion-item {
+  --background: rgba(146,190,224,0.04);
+  --color: #fff;
+  border-radius: 0.5rem;
+  border: 1px solid #92BEE0;
+  margin-bottom: 10px;
+}
+
+ion-label {
+  --color: #92BEE0 !important;
+  color: #92BEE0 !important;
+}
+
+ion-input {
+  --color: #fff !important;
+  color: #fff !important;
+}
+
+ion-list {
+  background: rgba(146,190,224,0.08);
+  border: 1px solid #92BEE0;
+  border-radius: 0.5rem;
+  margin-top: 8px;
+  padding: 4px;
+}
+
+ion-list ion-item {
+  --background: rgba(146,190,224,0.1);
+  border: none;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+ion-list ion-item:hover {
+  --background: rgba(146,190,224,0.2);
+}
+
+ion-button[expand="block"] {
+  margin-top: 10px;
+}
+
+ion-button {
+  --color: #92BEE0;
+}
+
+ion-button[color="primary"] {
+  --background: #92BEE0;
+  --color: #000;
+}
+
+ion-button[color="medium"] {
+  --background: rgba(146,190,224,0.2);
+  --color: #92BEE0;
+}

@@ -12,3 +12,11 @@ export interface Contact {
   updated_at: string;
   deleted_at?: string | null;
 }
+
+
+export interface ContactCreate{
+  phone: string;
+  email: string;
+  name: string;
+  direction: string;
+}

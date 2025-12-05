@@ -18,6 +18,7 @@ interface LatLng {
 }
 
 interface ActiveRoute {
+  user_id:number,
   id: number;
   name: string;
   userName: string;
@@ -77,6 +78,21 @@ export class Caminos implements OnInit, OnDestroy {
 
   ngOnInit() {
      try { this.token = localStorage.getItem('walksafe_token'); } catch (e) { this.token = null; }
+      // Inicializar socket con el token
+    try { 
+      this.socketService.init(this.token ?? undefined); 
+    } catch (e) { 
+      console.warn('[Auto Listen] socket init error', e); 
+    }
+        // Suscribirse a fin de rutas
+    this.socketService.onRouteRunFinished().subscribe(() => {
+      console.log('Suscribirse a fin de rutas')
+      this.getRunRouters();
+    });
+
+    this.socketService.onRouteRunStarted().subscribe(({ run }) => { console.log(run)
+      this.getRunRouters(); });
+
     this.getRunRouters();
     this.loadActiveRoutes();
     this.startLiveUpdates();
@@ -107,9 +123,10 @@ export class Caminos implements OnInit, OnDestroy {
     // Mock data - replace with actual service call
     this.activeRoutes = [
       {
+        user_id:1,
         id: 1,
         name: 'Camino a Casa',
-        userName: 'María González',
+        userName: 'Admin',
         status: 'active',
         currentLocation: 'Av. Principal 123',
         startTime: new Date(Date.now() - 1200000), // 20 min ago
@@ -122,48 +139,6 @@ export class Caminos implements OnInit, OnDestroy {
         mapPosition: { x: 35, y: 45 },
         destination: { x: 80, y: 30 }
       },
-      {
-        id: 2,
-        name: 'Ruta al Trabajo',
-        userName: 'Carlos Rodríguez',
-        status: 'paused',
-        currentLocation: 'Plaza Central',
-        startTime: new Date(Date.now() - 900000), // 15 min ago
-        lastUpdate: new Date(Date.now() - 300000), // 5 min ago
-        progress: 80,
-        mapLatLng: { lat: 25.5485, lng: -103.4180 },
-        destinationLatLng: { lat: 25.5300, lng: -103.4300 },
-        mapPosition: { x: 60, y: 30 },
-        destination: { x: 20, y: 70 }
-      },
-      {
-        id: 3,
-        name: 'Camino a Universidad',
-        userName: 'Ana Martínez',
-        status: 'active',
-        currentLocation: 'Calle de la Paz 45',
-        startTime: new Date(Date.now() - 600000), // 10 min ago
-        lastUpdate: new Date(),
-        progress: 45,
-        mapLatLng: { lat: 25.5470, lng: -103.4120 },
-        destinationLatLng: { lat: 25.5600, lng: -103.4000 },
-        mapPosition: { x: 25, y: 70 },
-        destination: { x: 90, y: 40 }
-      },
-      {
-        id: 4,
-        name: 'Ruta Nocturna',
-        userName: 'José López',
-        status: 'emergency',
-        currentLocation: 'Zona Industrial',
-        startTime: new Date(Date.now() - 1800000), // 30 min ago
-        lastUpdate: new Date(Date.now() - 120000), // 2 min ago
-        progress: 90,
-        mapLatLng: { lat: 25.5350, lng: -103.4200 },
-        destinationLatLng: { lat: 25.5250, lng: -103.4400 },
-        mapPosition: { x: 75, y: 60 },
-        destination: { x: 10, y: 20 }
-      }
     ];
 
     // Auto-select first route
@@ -627,6 +602,7 @@ export class Caminos implements OnInit, OnDestroy {
                 console.log(route.end_time)
                           if(!route.end_time){
                                     this.activeRoutes.push({
+                                    user_id:route.userId,
                                     id: route.id,
                                     name: route.route?.name ?? 'Sin nombre',
                                     userName: route.user?.name ?? 'Usuario desconocido',
@@ -670,23 +646,13 @@ export class Caminos implements OnInit, OnDestroy {
   }
 
   private async startAutoListen() {
-    try { 
-      this.token = this.token || localStorage.getItem('walksafe_token'); 
-    } catch (e) { 
-      this.token = this.token || null; 
-    }
-
+    try { this.stopListening(); } catch (e) {}
+    try { this.leaveRemote(); } catch (e) {}
     if (!this.token) {
       console.warn('[Auto Listen] No token available');
       return;
     }
 
-    // Inicializar socket con el token
-    try { 
-      this.socketService.init(this.token); 
-    } catch (e) { 
-      console.warn('[Auto Listen] socket init error', e); 
-    }
 
     if (!this.targetUserId) {
       console.warn('[Auto Listen] No targetUserId available');
@@ -718,6 +684,15 @@ export class Caminos implements OnInit, OnDestroy {
 
     // Solicitar al servidor que se une a la sala
     this.socketService.startListening(this.targetUserId);
+        
+    // Suscribirse a actualizaciones de ubicación
+    this.socketService.onLocationUpdate().subscribe((data: any) => {
+      console.log(data)
+      if (this.targetUserId && data.fromUserId == this.targetUserId) {
+        this.updateRouteLocationOnMap(data.location);
+      }
+    });
+
   }
 
     // (old toggleListening removed — UI uses toggleSelfListen)
@@ -792,7 +767,10 @@ export class Caminos implements OnInit, OnDestroy {
     try { const tk = this.token || undefined; this.socketService.init(tk); } catch (e) { console.warn('[Listen] socket init error', e); }
 
     // Determine target user id to listen to
-    try { this.targetUserId = this.targetUserId || localStorage.getItem('listen_target'); } catch (e) { this.targetUserId = this.targetUserId || null; }
+    try { this.targetUserId = this.selectedRoute?.user_id?.toString() ?? null; }
+    catch{
+      
+    }
     if (!this.targetUserId) {
       const provided = window.prompt('Introduce el ID del usuario a escuchar:');
       if (!provided) { console.warn('[Listen] no targetUserId provided'); return; }
@@ -889,5 +867,30 @@ export class Caminos implements OnInit, OnDestroy {
 
     return new Blob([view], { type: 'audio/wav' });
   }
+
+  // Actualizar ubicación del usuario en el mapa en tiempo real
+  private updateRouteLocationOnMap(location: any) {
+    if (!this.selectedRoute || !this.mapsLoaded || !this.liveMap) return;
+    
+    const latLng = { lat: location.lat, lng: location.long };
+    
+    if (this.liveMarker) {
+      this.liveMarker.setPosition(latLng);
+      this.liveMap.panTo(latLng);
+    } else {
+      const g = (window as any).google;
+      if (g && g.maps) {
+        this.liveMarker = new g.maps.Marker({
+          position: latLng,
+          map: this.liveMap,
+          title: `${this.selectedRoute.userName} - En vivo`
+        });
+      }
+    }
+    
+    this.selectedRoute.mapLatLng = latLng;
+  }
+
+  
 
 }

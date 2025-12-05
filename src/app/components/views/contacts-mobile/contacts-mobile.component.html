@@ -1,0 +1,36 @@
+<ion-content>
+  <div class="contacts-mobile-container">
+    
+      <div class="contacts-list-card">
+        <div class="contacts-list-header">
+          <span class="contacts-list-title">Mis Contactos</span>
+          <ion-button fill="clear" size="small" (click)="addingContact = true">
+            <ion-icon name="add-circle-outline"></ion-icon>
+          </ion-button>
+        </div>
+        <div *ngFor="let contact of userContacts" class="contact-item">
+          <div class="contact-info">
+            <div class="contact-nombre">{{ contact.name }}</div>
+            <div class="contact-details">
+              <span *ngIf="contact.phone">{{ contact.phone }}</span>
+              <span *ngIf="contact.email">{{ contact.email }}</span>
+              <span *ngIf="contact.direction">{{ contact.direction }} </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="addingContact" class="add-contact-form-card">
+        <app-contacts-form
+          [contact]="newContact"
+          [directionSuggestions]="directionSuggestions"
+          (save)="saveNewContact()"
+          (cancel)="addingContact = false"
+          (searchDirection)="onSearchDirection($event)"
+          (selectDirection)="onSelectDirection($event)"
+         >
+        </app-contacts-form>
+      </div>
+    
+  </div>
+</ion-content>

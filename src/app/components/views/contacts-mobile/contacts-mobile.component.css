@@ -1,0 +1,108 @@
+
+.contacts-mobile-container {
+  padding: 18px 8px 0 8px;
+  background: #000;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.contacts-list-card {
+  background: rgba(146, 190, 224, 0.08);
+  border: 1px solid #92BEE0;
+  border-radius: 1rem;
+  box-shadow: 0 0.25rem 0.9375rem rgba(0,0,0,0.6), 0 0 0.625rem rgba(146,190,224,0.15);
+  padding: 14px 8px 8px 8px;
+  margin-bottom: 18px;
+}
+.contacts-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.1rem;
+  color: #92BEE0;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.contacts-list-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #92BEE0;
+}
+.contact-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 8px;
+  border-bottom: 1px solid rgba(146, 190, 224, 0.3);
+  transition: background 0.2s;
+}
+.contact-item:last-child {
+  border-bottom: none;
+}
+.contact-item:hover {
+  background: rgba(146,190,224,0.07);
+  border-radius: 0.5rem;
+}
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+.contact-nombre {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #fff;
+  margin-bottom: 2px;
+}
+.contact-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.9rem;
+  color: #92BEE0;
+  line-height: 1.4;
+}
+.contact-details span {
+  display: block;
+}
+.contact-details span::before {
+  content: '• ';
+  margin-right: 4px;
+}
+.add-contact-form-card {
+  background: rgba(146, 190, 224, 0.08);
+  border: 1px solid #92BEE0;
+  border-radius: 1rem;
+  box-shadow: 0 0.25rem 0.9375rem rgba(0,0,0,0.6), 0 0 0.625rem rgba(146,190,224,0.15);
+  padding: 16px 10px 10px 10px;
+  margin-bottom: 18px;
+}
+.add-contact-form-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #92BEE0;
+  margin-bottom: 10px;
+}
+
+ion-item, ion-input, ion-label {
+  --background: transparent !important;
+  --color: #fff !important;
+  color: #fff !important;
+}
+ion-item {
+  border-radius: 0.5rem;
+  border: 1px solid #92BEE0;
+  margin-bottom: 10px;
+  background: rgba(146,190,224,0.04) !important;
+}
+ion-button[expand="block"] {
+  margin-top: 10px;
+}
+ion-button, ion-icon {
+  --color: #92BEE0 !important;
+}
+ion-button[color="danger"] {
+  --background: #ff6b35 !important;
+  --color: #fff !important;
+}

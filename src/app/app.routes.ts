@@ -24,12 +24,20 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'caminos',
+        redirectTo: 'contacts',
         pathMatch: 'full',
       },
       {
         path: 'caminos',
         loadComponent: () => import('./components/views/caminos-mobile/caminos-mobile.component').then(m => m.CaminosMobileComponent)
+      },
+      {
+        path: 'history',
+        loadComponent: () => import('./components/views/history-mobile/history-mobile.component').then(m => m.HistoryMobileComponent)
+      },
+      {
+        path: 'contacts',
+        loadComponent: () => import('./components/views/contacts-mobile/contacts-mobile.component').then(m => m.ContactsMobileComponent)
       },
       // Puedes agregar más rutas móviles aquí (incidentes, monitoreadores, zonas-peligrosas, etc.)
     ]

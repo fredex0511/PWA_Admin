@@ -181,7 +181,7 @@ sendLocation(location: { lat: number; long: number; timestamp?: string } | any) 
 onLocationUpdate(): Observable<{ fromUserId: number; location: any }> {
   return new Observable(observer => {
     const handler = (data: any) => {
-      // El servidor reenvía: { fromUserId, location }
+      console.log('[SocketService] location-update received:', data);
       observer.next(data);
     };
     this.socket?.on('location-update', handler);
@@ -192,7 +192,10 @@ onLocationUpdate(): Observable<{ fromUserId: number; location: any }> {
 // Observable para cuando un recorrido inicia (global o en sala listen:{userId})
 onRouteRunStarted(): Observable<any> {
   return new Observable(observer => {
-    const handler = (data: any) => observer.next(data);
+    const handler = (data: any) => {
+      console.log('[SocketService] route-run-started received:', data);
+      observer.next(data);
+    };
     this.socket?.on('route-run-started', handler);
     return () => { this.socket?.off('route-run-started', handler); };
   });
@@ -201,7 +204,10 @@ onRouteRunStarted(): Observable<any> {
 // Observable para cuando un recorrido finaliza
 onRouteRunFinished(): Observable<any> {
   return new Observable(observer => {
-    const handler = (data: any) => observer.next(data);
+    const handler = (data: any) => {
+      console.log('[SocketService] route-run-finished received:', data);
+      observer.next(data);
+    };
     this.socket?.on('route-run-finished', handler);
     return () => { this.socket?.off('route-run-finished', handler); };
   });
