@@ -7,12 +7,16 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class PlacesService {
-  API_URL = environment.API_URL + 'places/';
+  API_URL = environment.api + 'places/';
 
   constructor(private http: HttpClient) { }
 
   getPlaces(): Observable<any> {
     return this.http.get(this.API_URL);
+  }
+
+  getPlacesIncidents(): Observable<any> {
+    return this.http.get(this.API_URL + '?type=incident');
   }
 
   showPlace(id: string): Observable<any> {

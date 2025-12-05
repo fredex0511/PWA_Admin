@@ -9,233 +9,8 @@ import { RunroutesService } from 'src/app/services/runroutes';
 import { RouteRun } from 'src/app/interfaces/route-run';
 import { SocketService } from 'src/app/services/socket/socket';
 import { IncidentsService } from 'src/app/services/incidents';
-
-/**
- * BACKEND VALIDATOR ADONIS - CreateIncidentValidator.ts
- * 
- * import { schema, CustomMessages, rules } from "@ioc:Adonis/Core/Validator";
- * import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
- * 
- * export default class CreateIncidentValidator {
- *   constructor(protected ctx: HttpContextContract) {}
- * 
- *   public schema = schema.create({
- *     date: schema.date({}),
- *     routeRunId: schema.number([
- *       rules.exists({ table: "route_runs", column: "id" }),
- *     ]),
- *     description: schema.string.optional(),
- *     // placeId: Se genera automáticamente en el backend según geolocalización
- *   });
- * 
- *   public messages: CustomMessages = {};
- * }
- * 
- * BACKEND MULTER CONFIG - config/drive.ts
- * 
- * export const driveConfig = {
- *   disk: 'local',
- *   disks: {
- *     local: {
- *       driver: 'local',
- *       visibility: 'private',
- *       basePath: './storage/uploads/incidents',
- *     },
- *   },
- * };
- * 
- * BACKEND MIDDLEWARE - app/Middleware/HandleMultipartForm.ts
- * 
- * import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
- * import multer from 'multer';
- * import path from 'path';
- * 
- * export default class HandleMultipartForm {
- *   public async handle({ request }: HttpContextContract, next: () => Promise<void>) {
- *     if (request.method() === 'POST' && request.is(['multipart/form-data'])) {
- *       const upload = multer({
- *         storage: multer.diskStorage({
- *           destination: (req, file, cb) => {
- *             cb(null, 'storage/uploads/incidents/');
- *           },
- *           filename: (req, file, cb) => {
- *             const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
- *             cb(null, uniqueSuffix + path.extname(file.originalname));
- *           },
- *         }),
- *         limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
- *         fileFilter: (req, file, cb) => {
- *           const allowedMimes = [
- *             'image/jpeg', 'image/png', 'image/gif', 'image/webp',
- *             'video/mp4', 'video/webm', 'video/quicktime',
- *             'audio/webm', 'audio/mpeg', 'audio/wav', 'audio/ogg'
- *           ];
- *           if (allowedMimes.includes(file.mimetype)) {
- *             cb(null, true);
- *           } else {
- *             cb(new Error(`Tipo de archivo no permitido: ${file.mimetype}`), false);
- *           }
- *         },
- *       });
- * 
- *       await new Promise<void>((resolve, reject) => {
- *         upload.any()(req, res, (err: any) => {
- *           if (err) reject(err);
- *           else resolve();
- *         });
- *       });
- *     }
- *     await next();
- *   }
- * }
- * 
- * BACKEND CONTROLLER - app/Controllers/Http/IncidentsController.ts
- * 
- * import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
- * import Incident from "App/Models/Incident";
- * import CreateIncidentValidator from "App/Validators/CreateIncidentValidator";
- * 
- * export default class IncidentsController {
- *   public async create({ request, response }: HttpContextContract) {
- *     const data = await request.validate(CreateIncidentValidator);
- * 
- *     // Obtener archivos enviados
- *     const files = request.files('files', {
- *       size: '100mb',
- *       extnames: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'webm', 'mov', 'webm', 'mp3', 'wav', 'ogg'],
- *     });
- * 
- *     console.log('FormData recibido:', {
- *       date: data.date,
- *       routeRunId: data.routeRunId,
- *       description: data.description,
- *       filesCount: files.length,
- *       fileDetails: files.map((f: any) => ({
- *         fieldname: f.fieldname,      // 'files'
- *         originalname: f.clientName,  // 'photo-1701731430123.jpg'
- *         mimetype: f.headers['content-type'],
- *         size: f.size,
- *         path: f.tmpPath, // Ruta temporal antes de guardar
- *       })),
- *     });
- * 
- *     // Crear incidente
- *     const incident = await Incident.create({
- *       date: data.date,
- *       routeRunId: data.routeRunId,
- *       description: data.description || '',
- *     });
- * 
- *     // Guardar archivos
- *     for (let file of files) {
- *       const fileName = `${Date.now()}-${file.clientName}`;
- *       await file.move('storage/uploads/incidents', { name: fileName });
- *       
- *       // Guardar referencia en tabla de evidencias
- *       await incident.related('evidences').create({
- *         filePath: `uploads/incidents/${fileName}`,
- *         fileType: file.headers['content-type'],
- *         fileName: file.clientName,
- *       });
- *     }
- * 
- *     return response.created(incident);
- *   }
- * }
- * 
- * BACKEND MODEL - app/Models/Incident.ts
- * 
- * import { DateTime } from 'luxon'
- * import { BaseModel, column, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm'
- * import Evidence from './Evidence'
- * 
- * export default class Incident extends BaseModel {
- *   public static table = 'incidents'
- * 
- *   @column({ isPrimary: true })
- *   public id: number
- * 
- *   @column()
- *   public date: DateTime
- * 
- *   @column()
- *   public placeId: number
- * 
- *   @column()
- *   public routeRunId: number
- * 
- *   @column()
- *   public description: string
- * 
- *   @hasMany(() => Evidence)
- *   public evidences: HasMany<typeof Evidence>
- * 
- *   @column.dateTime({ autoCreate: true })
- *   public createdAt: DateTime
- * 
- *   @column.dateTime({ autoCreate: true, autoUpdate: true })
- *   public updatedAt: DateTime
- * }
- * 
- * BACKEND EVIDENCE MODEL - app/Models/Evidence.ts
- * 
- * import { DateTime } from 'luxon'
- * import { BaseModel, column, belongsTo, BelongsTo } from '@ioc:Adonis/Lucid/Orm'
- * import Incident from './Incident'
- * 
- * export default class Evidence extends BaseModel {
- *   public static table = 'evidences'
- * 
- *   @column({ isPrimary: true })
- *   public id: number
- * 
- *   @column()
- *   public incidentId: number
- * 
- *   @column()
- *   public filePath: string // uploads/incidents/1701731430123.jpg
- * 
- *   @column()
- *   public fileType: string // image/jpeg, audio/webm, video/mp4, etc
- * 
- *   @column()
- *   public fileName: string // photo-1701731430123.jpg
- * 
- *   @belongsTo(() => Incident)
- *   public incident: BelongsTo<typeof Incident>
- * 
- *   @column.dateTime({ autoCreate: true })
- *   public createdAt: DateTime
- * 
- *   @column.dateTime({ autoCreate: true, autoUpdate: true })
- *   public updatedAt: DateTime
- * }
- * 
- * DATABASE MIGRATION - database/migrations/XXXX_create_evidences_table.ts
- * 
- * import BaseSchema from '@ioc:Adonis/Lucid/Schema'
- * 
- * export default class extends BaseSchema {
- *   protected tableName = 'evidences'
- * 
- *   public async up() {
- *     this.schema.createTable(this.tableName, (table) => {
- *       table.increments('id')
- *       table.integer('incident_id').unsigned().references('incidents.id').onDelete('CASCADE')
- *       table.string('file_path').notNullable() // uploads/incidents/1701731430123.jpg
- *       table.string('file_type').notNullable()  // image/jpeg, audio/webm, etc
- *       table.string('file_name').notNullable()  // photo-1701731430123.jpg
- *       table.timestamp('created_at', { useTz: true })
- *       table.timestamp('updated_at', { useTz: true })
- *     })
- *   }
- * 
- *   public async down() {
- *     this.schema.dropTable(this.tableName)
- *   }
- * }
- */
-
+import { IncidentType } from 'src/app/services/incident-type';
+import { IncidentTypes } from 'src/app/interfaces/incident-type';
 interface UserPath {
   route_id?:number
   name: string;
@@ -253,6 +28,7 @@ interface UserPath {
   styleUrls: ['./caminos-mobile.component.css']
 })
 export class CaminosMobileComponent implements OnInit, OnDestroy {
+  incidentType: IncidentTypes[] = []
   userPaths: UserPath[] = [];
   addingPath = false;
   newPath: UserPath = { name: '', origin: '', destination: '' };
@@ -280,6 +56,10 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
   isStreaming = false;
   // token to authenticate socket (can be left empty to use stored token)
   token: string | null = null;
+
+  // Incident type management
+  selectedIncidentType: string = '';
+  canSaveIncident = false;
 
   // Autocomplete handlers for PathFormComponent
   onSearchOrigin(event: any) {
@@ -370,16 +150,26 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
     }
   }
 
-  constructor(private incidentsService:IncidentsService,private alertController: AlertController, private ngZone: NgZone, private routeService : RouteService, private runRouteService: RunroutesService ,private socketService: SocketService) {}
+  constructor(
+    private incidentsService:IncidentsService,
+    private alertController: AlertController, 
+    private ngZone: NgZone, 
+    private routeService : RouteService, 
+    private runRouteService: RunroutesService ,
+    private socketService: SocketService,
+    private incidentTypeService:IncidentType) {}
 
   ngOnInit() {
     try { this.token = localStorage.getItem('walksafe_token'); } catch (e) { this.token = null; }
     this.getPaths()
+    this.getIncidentType()
     this.loadGoogleMapsSdk()
       .then(() => {
         this.mapsLoaded = true;
       })
       .catch(err => console.error('Error loading Google Maps SDK', err));
+
+    this.getIncidentType();
   }
 
   ngOnDestroy() {
@@ -868,6 +658,8 @@ this.runRouteService
     this.recordingIncident = true;
     this.incidentEvidence = [];
     this.incidentDescription = '';
+    this.selectedIncidentType = '';
+    this.canSaveIncident = false;
     this.incidentAudioChunks = [];
     console.log('[Incident] Iniciando grabación de incidente');
     
@@ -987,16 +779,6 @@ this.runRouteService
 
       console.log('[Incident] Enviando incidente con evidencia:', this.incidentEvidence);
       console.log('[Incident] Descripción:', this.incidentDescription);
-
-      // Crear FormData para enviar archivos
-      // ESTRUCTURA PARA EL BACKEND:
-      // - date: string (ISO 8601 format) - Fecha/hora del incidente
-      // - routeRunId: number - ID del recorrido activo
-      // - description: string - Descripción del incidente
-      // - locationLatLng: object - { lat: number, lng: number } - Ubicación del incidente
-      // - files: File[] - Array de archivos en FormData con clave "files"
-      //   Cada archivo se agrega con: formData.append('files', file, filename)
-      //   Los nombres de archivo preservan su extensión original
       
       const formData = new FormData();
       
@@ -1004,12 +786,18 @@ this.runRouteService
       formData.append('date', new Date().toISOString());
       formData.append('routeRunId', this.runrouterActive?.id?.toString() || '0');
       formData.append('description', this.incidentDescription || '');
+      formData.append('incidentTypeId', this.selectedIncidentType);
       
       // Agregar ubicación del incidente (ubicación actual del usuario)
       if (this.currentUserLocation) {
         formData.append('lat', this.currentUserLocation.lat.toString())
         formData.append('lng', this.currentUserLocation.lng.toString())
         console.log('[Incident] Ubicación actual agregada:', this.currentUserLocation);
+        
+        // Obtener nombre de la calle usando geocodificación inversa de Google
+        const locationName = await this.getLocationName(this.currentUserLocation.lat, this.currentUserLocation.lng);
+        formData.append('ubicacion', locationName);
+        console.log('[Incident] Nombre de ubicación agregado:', locationName);
       }
 
       // Agregar todos los archivos de evidencia con la clave "files"
@@ -1063,6 +851,108 @@ this.runRouteService
         buttons: ['OK']
       });
       await alert.present();
+    }
+  }
+
+  private async getIncidentType(){
+    this.incidentTypeService
+      .getIncidentType()
+      .subscribe({
+        next: async (resp) => {
+          if(resp.data){
+            this.incidentType = resp.data
+          }
+          else{
+            this.incidentType = []
+          }
+          },
+          error: async (err) => {
+          let message = 'Error al iniciar sesión';
+          if (err.error.msg) {
+            message = err.error.msg;
+          } 
+          const alert = await this.alertController.create({
+            header: 'Error de autenticación',
+            message,
+            buttons: ['OK'],
+          });
+          await alert.present();
+        },
+      });
+  }
+
+  onIncidentTypeChange(){
+    this.canSaveIncident = this.selectedIncidentType !== '';
+  }
+
+  private async getLocationName(lat: number, lng: number): Promise<string> {
+    try {
+      const g = (window as any).google;
+      if (!g || !g.maps || !g.maps.Geocoder) {
+        console.warn('[Geocoding] Google Maps no disponible');
+        return `${lat}, ${lng}`;
+      }
+
+      const geocoder = new g.maps.Geocoder();
+      const latLng = { lat, lng };
+
+      return new Promise<string>((resolve) => {
+        geocoder.geocode({ location: latLng }, (results: any[], status: any) => {
+          if (status === 'OK' && results && results.length > 0) {
+            // Intentar obtener la dirección más específica
+            const result = results[0];
+            const addressComponents = result.address_components;
+            
+            // Construir dirección con calle y número si están disponibles
+            let street = '';
+            let streetNumber = '';
+            let neighborhood = '';
+            let city = '';
+            
+            addressComponents.forEach((component: any) => {
+              if (component.types.includes('route')) {
+                street = component.long_name;
+              }
+              if (component.types.includes('street_number')) {
+                streetNumber = component.long_name;
+              }
+              if (component.types.includes('neighborhood') || component.types.includes('sublocality')) {
+                neighborhood = component.long_name;
+              }
+              if (component.types.includes('locality')) {
+                city = component.long_name;
+              }
+            });
+
+            // Construir dirección completa
+            let address = '';
+            if (street) {
+              address = street;
+              if (streetNumber) {
+                address = `${street} ${streetNumber}`;
+              }
+              if (neighborhood) {
+                address += `, ${neighborhood}`;
+              }
+              if (city) {
+                address += `, ${city}`;
+              }
+            } else {
+              // Si no hay calle específica, usar formatted_address
+              address = result.formatted_address;
+            }
+
+            console.log('[Geocoding] Dirección obtenida:', address);
+            resolve(address);
+          } else {
+            console.warn('[Geocoding] No se encontró dirección:', status);
+            resolve(`${lat}, ${lng}`);
+          }
+        });
+      });
+    } catch (error) {
+      console.error('[Geocoding] Error:', error);
+      return `${lat}, ${lng}`;
     }
   }
 

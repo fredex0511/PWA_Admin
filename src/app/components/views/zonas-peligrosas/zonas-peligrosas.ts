@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { PlacesService } from 'src/app/services/places';
 
 // Interfaces
 interface Coordinates {
@@ -17,9 +18,10 @@ interface Incident {
   id: string;
   location: Coordinates;
   type: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: 'sin_riesgo' | 'molestias' | 'peligroso' | 'muy_peligroso';
   reportedAt: Date;
   description: string;
+  incidentTypeName?: string;
 }
 
 interface DangerZone {
@@ -30,7 +32,7 @@ interface DangerZone {
   coordinates: Coordinates;
   position: Position;
   radius: number;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: 'sin_riesgo' | 'molestias' | 'peligroso' | 'muy_peligroso';
   incidentCount: number;
   detectedAt: Date;
   incidents: Incident[];
@@ -50,14 +52,19 @@ export class ZonasPeligrosas implements OnInit, OnDestroy {
   selectedZone: DangerZone | null = null;
   showLegend: boolean = false;
   totalIncidents: number = 0;
+  criticalZones: number = 0;
+  highRiskZones: number = 0;
+  mediumRiskZones: number = 0;
+  lowRiskZones: number = 0;
   // Google Maps objects
   private map: any = null;
   private markers: any[] = [];
   private circles: any[] = [];
+  private incidentMarkers: any[] = [];
+  private infoWindow: any = null;
   private mapsLoaded = false;
   
   // Map configuration
-  private readonly SAFETY_RADIUS = 50; // 50 meters
   private readonly MAP_BOUNDS = {
     // Torreón, Coahuila approx bounds
     minLat: 25.5200,
@@ -66,84 +73,80 @@ export class ZonasPeligrosas implements OnInit, OnDestroy {
     maxLng: -103.3800
   };
 
-  constructor() { }
+  constructor(private placesService:PlacesService) { }
 
   ngOnInit() {
-    this.loadIncidentsData();
-    this.calculateDangerZones();
     this.loadGoogleMapsSdk()
       .then(() => {
         this.mapsLoaded = true;
-        setTimeout(() => this.initMap(), 0);
+        this.getPlaces();
       })
-      .catch(err => console.error('Error loading Google Maps SDK', err));
+      .catch((err: any) => console.error('Error loading Google Maps SDK', err));
   }
 
   ngOnDestroy() {
     // Cleanup if needed
   }
 
-  // Data loading and processing
-  loadIncidentsData() {
-    // Mock incidents data - replace with actual service call
-    const mockIncidents: Incident[] = [
-      // Torreón sample incidents
-      {
-        id: '1',
-        location: { lat: 25.5430, lng: -103.4235 }, // Centro (near Boulevard Independencia)
-        type: 'Robo',
-        severity: 'high',
-        reportedAt: new Date(Date.now() - 3600000),
-        description: 'Robo con violencia reportado'
-      },
-      {
-        id: '2',
-        location: { lat: 25.5455, lng: -103.4200 }, // Col. Centro
-        type: 'Asalto',
-        severity: 'critical',
-        reportedAt: new Date(Date.now() - 1800000),
-        description: 'Asalto reportado en vía pública'
-      },
-      {
-        id: '3',
-        location: { lat: 25.5380, lng: -103.4280 }, // Cerca de Plaza cu
-        type: 'Amenaza',
-        severity: 'medium',
-        reportedAt: new Date(Date.now() - 7200000),
-        description: 'Persona sospechosa observada'
-      },
-      {
-        id: '4',
-        location: { lat: 25.5330, lng: -103.4250 }, // Zona industrial cercana
-        type: 'Vandalismo',
-        severity: 'low',
-        reportedAt: new Date(Date.now() - 14400000),
-        description: 'Daños a propiedad reportados'
-      },
-      {
-        id: '5',
-        location: { lat: 25.5500, lng: -103.4180 }, // Barrio residencial
-        type: 'Robo',
-        severity: 'high',
-        reportedAt: new Date(Date.now() - 10800000),
-        description: 'Hurto de pertenencias'
-      },
-      {
-        id: '6',
-        location: { lat: 25.5360, lng: -103.4150 }, // Cercanías
-        type: 'Agresión',
-        severity: 'critical',
-        reportedAt: new Date(Date.now() - 5400000),
-        description: 'Agresión física reportada'
-      }
-    ];
-
-    this.totalIncidents = mockIncidents.length;
-    return mockIncidents;
+  private async getPlaces(){
+    this.placesService
+      .getPlacesIncidents()
+      .subscribe({
+        next: async (resp) => {
+          console.log('Places data:', resp);
+          if (resp.data && resp.data.length > 0) {
+            this.loadIncidentsFromPlaces(resp.data);
+          }
+        },
+        error: async (err) => {
+          let message = 'Error al cargar lugares';
+          if (err.error?.msg) {
+            message = err.error.msg;
+          }
+          console.error('Error loading places:', message);
+        },
+      });
   }
 
-  calculateDangerZones() {
-    const incidents = this.loadIncidentsData();
+  private loadIncidentsFromPlaces(places: any[]) {
+    const incidents: Incident[] = [];
+    
+    places.forEach(place => {
+      if (place.incidents && place.incidents.length > 0) {
+        place.incidents.forEach((incident: any) => {
+          incidents.push({
+            id: incident.id.toString(),
+            location: { 
+              lat: parseFloat(place.lat), 
+              lng: parseFloat(place.long) 
+            },
+            type: incident.incidentType?.name || 'Incidente',
+            severity: incident.type as 'sin_riesgo' | 'molestias' | 'peligroso' | 'muy_peligroso',
+            reportedAt: new Date(incident.date),
+            description: incident.description !== 'null' ? incident.description : '',
+            incidentTypeName: incident.incidentType?.name
+          });
+        });
+      }
+    });
+    
+    console.log('Loaded incidents:', incidents);
+    this.totalIncidents = incidents.length;
+    
+    this.calculateDangerZonesFromIncidents(incidents);
+  }
+
+  private calculateDangerZonesFromIncidents(incidents: Incident[]) {
+    if (incidents.length === 0) {
+      this.dangerZones = [];
+      if (this.map) {
+        this.initMap();
+      } else {
+        setTimeout(() => this.initMap(), 100);
+      }
+      return;
+    }
+
     const zones: DangerZone[] = [];
 
     // Group incidents by proximity (within 100 meters)
@@ -161,22 +164,21 @@ export class ZonasPeligrosas implements OnInit, OnDestroy {
       // Mark incidents as processed
       nearbyIncidents.forEach(inc => processed.add(inc.id));
 
-      // Calculate zone center (average of incident coordinates)
-      const centerLat = nearbyIncidents.reduce((sum, inc) => sum + inc.location.lat, 0) / nearbyIncidents.length;
-      const centerLng = nearbyIncidents.reduce((sum, inc) => sum + inc.location.lng, 0) / nearbyIncidents.length;
+      // Find the most centralized incident
+      const centralIncident = this.getMostCentralIncident(nearbyIncidents);
 
       // Determine zone severity based on incidents
       const severity = this.calculateZoneSeverity(nearbyIncidents);
 
-      // Create danger zone
+      // Create danger zone centered on the most central incident
       const zone: DangerZone = {
         id: `zone-${zones.length + 1}`,
         name: this.generateZoneName(nearbyIncidents),
         description: this.generateZoneDescription(nearbyIncidents),
-        location: this.getLocationName(centerLat, centerLng),
-        coordinates: { lat: centerLat, lng: centerLng },
-        position: this.coordinatesToPosition(centerLat, centerLng),
-        radius: this.SAFETY_RADIUS,
+        location: this.getLocationName(centralIncident.location.lat, centralIncident.location.lng),
+        coordinates: { lat: centralIncident.location.lat, lng: centralIncident.location.lng },
+        position: this.coordinatesToPosition(centralIncident.location.lat, centralIncident.location.lng),
+        radius: this.getZoneRadiusInMeters(severity),
         severity: severity,
         incidentCount: nearbyIncidents.length,
         detectedAt: new Date(Math.min(...nearbyIncidents.map(inc => inc.reportedAt.getTime()))),
@@ -187,6 +189,13 @@ export class ZonasPeligrosas implements OnInit, OnDestroy {
     });
 
     this.dangerZones = zones;
+    this.updateZoneStats();
+    
+      if (this.map) {
+        this.renderZonesOnMap();
+      } else {
+        setTimeout(() => this.initMap(), 100);
+      }
   }
 
   // Utility methods
@@ -201,6 +210,35 @@ export class ZonasPeligrosas implements OnInit, OnDestroy {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     
     return R * c;
+  }
+
+  private getMostCentralIncident(incidents: Incident[]): Incident {
+    if (incidents.length === 0) return incidents[0];
+    if (incidents.length === 1) return incidents[0];
+
+    // Calculate average coordinates
+    const avgLat = incidents.reduce((sum, inc) => sum + inc.location.lat, 0) / incidents.length;
+    const avgLng = incidents.reduce((sum, inc) => sum + inc.location.lng, 0) / incidents.length;
+
+    // Find incident closest to average position
+    let mostCentral = incidents[0];
+    let minDistance = this.calculateDistance(
+      incidents[0].location,
+      { lat: avgLat, lng: avgLng }
+    );
+
+    incidents.forEach(incident => {
+      const distance = this.calculateDistance(
+        incident.location,
+        { lat: avgLat, lng: avgLng }
+      );
+      if (distance < minDistance) {
+        minDistance = distance;
+        mostCentral = incident;
+      }
+    });
+
+    return mostCentral;
   }
 
   toRadians(degrees: number): number {
@@ -218,14 +256,14 @@ export class ZonasPeligrosas implements OnInit, OnDestroy {
     };
   }
 
-  calculateZoneSeverity(incidents: Incident[]): 'low' | 'medium' | 'high' | 'critical' {
-    const severityScores = { low: 1, medium: 2, high: 3, critical: 4 };
+  calculateZoneSeverity(incidents: Incident[]): 'sin_riesgo' | 'molestias' | 'peligroso' | 'muy_peligroso' {
+    const severityScores = { sin_riesgo: 1, molestias: 2, peligroso: 3, muy_peligroso: 4 };
     const avgScore = incidents.reduce((sum, inc) => sum + severityScores[inc.severity], 0) / incidents.length;
     
-    if (avgScore >= 3.5) return 'critical';
-    if (avgScore >= 2.5) return 'high';
-    if (avgScore >= 1.5) return 'medium';
-    return 'low';
+    if (avgScore >= 3.5) return 'muy_peligroso';
+    if (avgScore >= 2.5) return 'peligroso';
+    if (avgScore >= 1.5) return 'molestias';
+    return 'sin_riesgo';
   }
 
   generateZoneName(incidents: Incident[]): string {
@@ -275,37 +313,75 @@ export class ZonasPeligrosas implements OnInit, OnDestroy {
     return zone.id;
   }
 
+  private updateZoneStats() {
+    this.criticalZones = this.dangerZones.filter(z => z.severity === 'muy_peligroso').length;
+    this.highRiskZones = this.dangerZones.filter(z => z.severity === 'peligroso').length;
+    this.mediumRiskZones = this.dangerZones.filter(z => z.severity === 'molestias').length;
+    this.lowRiskZones = this.dangerZones.filter(z => z.severity === 'sin_riesgo').length;
+  }
+
   getZoneRadius(severity: string): number {
     // Return pixel radius based on severity for visual representation
     const baseRadius = 60;
-    const multipliers = { low: 0.8, medium: 1.0, high: 1.2, critical: 1.5 };
+    const multipliers = { sin_riesgo: 0.8, molestias: 1.0, peligroso: 1.2, muy_peligroso: 1.5 };
     return baseRadius * (multipliers[severity as keyof typeof multipliers] || 1);
+  }
+
+  getZoneRadiusInMeters(severity: string): number {
+    // Return actual radius in meters based on severity
+    switch (severity) {
+      case 'sin_riesgo':
+        return 100;
+      case 'molestias':
+        return 200;
+      case 'peligroso':
+        return 300;
+      case 'muy_peligroso':
+        return 400;
+      default:
+        return 200;
+    }
   }
 
   getSeverityColor(severity: string): string {
     switch (severity) {
-      case 'low':
+      case 'sin_riesgo':
+        return 'success';
+      case 'molestias':
+        return 'tertiary';
+      case 'peligroso':
         return 'warning';
-      case 'medium':
-        return 'warning';
-      case 'high':
-        return 'danger';
-      case 'critical':
+      case 'muy_peligroso':
         return 'danger';
       default:
         return 'medium';
     }
   }
 
+  private getMarkerAndCircleColors(severity: string): { fill: string; stroke: string } {
+    switch (severity) {
+      case 'sin_riesgo':
+        return { fill: '#2dd36f', stroke: '#28ba62' }; // Verde (success)
+      case 'molestias':
+        return { fill: '#6030ff', stroke: '#5260ff' }; // Amarillo (warning)
+      case 'peligroso':
+        return { fill: '#ffc409', stroke: '#ffca22' }; // Naranja (tertiary personalizado)
+      case 'muy_peligroso':
+        return { fill: '#eb445a', stroke: '#cf3c4f' }; // Rojo (danger)
+      default:
+        return { fill: '#92949c', stroke: '#808289' }; // Gris (medium)
+    }
+  }
+
   getSeverityLabel(severity: string): string {
     switch (severity) {
-      case 'low':
+      case 'sin_riesgo':
         return 'Riesgo Bajo';
-      case 'medium':
+      case 'molestias':
         return 'Riesgo Medio';
-      case 'high':
+      case 'peligroso':
         return 'Riesgo Alto';
-      case 'critical':
+      case 'muy_peligroso':
         return 'Riesgo Crítico';
       default:
         return 'Desconocido';
@@ -331,8 +407,7 @@ export class ZonasPeligrosas implements OnInit, OnDestroy {
   // Map control methods
   refreshMap() {
     console.log('Actualizando mapa...');
-    this.calculateDangerZones();
-    if (this.mapsLoaded) this.renderZonesOnMap();
+    this.getPlaces();
   }
 
   toggleLegend() {
@@ -345,7 +420,7 @@ export class ZonasPeligrosas implements OnInit, OnDestroy {
     if (this.map && this.dangerZones.length > 0) {
       const g = (window as any).google;
       const bounds = new g.maps.LatLngBounds();
-      this.dangerZones.forEach(z => bounds.extend(new g.maps.LatLng(z.coordinates.lat, z.coordinates.lng)));
+      this.dangerZones.forEach((z: DangerZone) => bounds.extend(new g.maps.LatLng(z.coordinates.lat, z.coordinates.lng)));
       this.map.fitBounds(bounds);
     }
   }
@@ -382,10 +457,14 @@ export class ZonasPeligrosas implements OnInit, OnDestroy {
       disableDefaultUI: true
     });
 
+    // Create InfoWindow for hover details
+    this.infoWindow = new g.maps.InfoWindow();
+
     this.renderZonesOnMap();
     // When user clicks on the map (not on a marker/circle), clear any selected zone/dialog
     this.map.addListener('click', (e: any) => {
       this.clearSelection();
+      this.infoWindow.close();
     });
   }
 
@@ -393,52 +472,105 @@ export class ZonasPeligrosas implements OnInit, OnDestroy {
     if (!this.map) return;
 
     // Clear previous markers and circles
-    this.markers.forEach(m => m.setMap(null));
-    this.circles.forEach(c => c.setMap(null));
+    this.markers.forEach((m: any) => m.setMap(null));
+    this.circles.forEach((c: any) => c.setMap(null));
+    this.incidentMarkers.forEach((m: any) => m.setMap(null));
     this.markers = [];
     this.circles = [];
+    this.incidentMarkers = [];
 
-    this.dangerZones.forEach(zone => {
-      // Marker
-      const g = (window as any).google;
-      const marker = new g.maps.Marker({
+    const g = (window as any).google;
+
+    this.dangerZones.forEach((zone: DangerZone) => {
+      const colors = this.getMarkerAndCircleColors(zone.severity);
+      
+      // Zone center marker (larger)
+      const zoneMarker = new g.maps.Marker({
         position: { lat: zone.coordinates.lat, lng: zone.coordinates.lng },
         map: this.map!,
         title: zone.name,
         icon: {
           path: g.maps.SymbolPath.CIRCLE,
-          scale: 8,
-          fillColor: '#ff6b35',
+          scale: 10,
+          fillColor: colors.fill,
           fillOpacity: 1,
-          strokeColor: '#92BEE0',
-          strokeWeight: 2
-        }
+          strokeColor: colors.stroke,
+          strokeWeight: 3
+        },
+        zIndex: 1000
       });
 
-      marker.addListener('click', () => this.selectZone(zone));
-      this.markers.push(marker);
+      zoneMarker.addListener('click', () => this.selectZone(zone));
+      
+      // Hover to show zone info
+      zoneMarker.addListener('mouseover', () => {
+        const content = this.generateZoneInfoContent(zone);
+        this.infoWindow.setContent(content);
+        this.infoWindow.open(this.map, zoneMarker);
+      });
 
-      // Circle (50m radius)
+      zoneMarker.addListener('mouseout', () => {
+        setTimeout(() => this.infoWindow.close(), 2000);
+      });
+
+      this.markers.push(zoneMarker);
+
+      // Circle (zone radius)
       const circle = new g.maps.Circle({
-        strokeColor: '#ff0000',
+        strokeColor: colors.stroke,
         strokeOpacity: 0.6,
         strokeWeight: 2,
-        fillColor: '#ff0000',
-        fillOpacity: 0.18,
+        fillColor: colors.fill,
+        fillOpacity: 0.15,
         map: this.map!,
         center: { lat: zone.coordinates.lat, lng: zone.coordinates.lng },
-        radius: zone.radius // meters
+        radius: zone.radius
       });
 
       circle.addListener('click', (ev: any) => this.selectZone(zone));
       this.circles.push(circle);
+
+      // Individual incident markers (smaller points)
+      zone.incidents.forEach((incident: Incident) => {
+        const incidentMarker = new g.maps.Marker({
+          position: { lat: incident.location.lat, lng: incident.location.lng },
+          map: this.map!,
+          title: incident.type,
+          icon: {
+            path: g.maps.SymbolPath.CIRCLE,
+            scale: 5,
+            fillColor: colors.fill,
+            fillOpacity: 0.8,
+            strokeColor: '#ffffff',
+            strokeWeight: 1
+          },
+          zIndex: 500
+        });
+
+        // Hover to show incident info
+        incidentMarker.addListener('mouseover', () => {
+          const content = this.generateIncidentInfoContent(incident, zone);
+          this.infoWindow.setContent(content);
+          this.infoWindow.open(this.map, incidentMarker);
+        });
+
+        incidentMarker.addListener('mouseout', () => {
+          setTimeout(() => this.infoWindow.close(), 2000);
+        });
+
+        incidentMarker.addListener('click', () => this.selectZone(zone));
+        this.incidentMarkers.push(incidentMarker);
+      });
     });
 
     // Fit to bounds
     if (this.dangerZones.length > 0) {
-      const g = (window as any).google;
       const bounds = new g.maps.LatLngBounds();
-      this.dangerZones.forEach(z => bounds.extend(new g.maps.LatLng(z.coordinates.lat, z.coordinates.lng)));
+      this.dangerZones.forEach((z: DangerZone) => {
+        z.incidents.forEach((inc: Incident) => {
+          bounds.extend(new g.maps.LatLng(inc.location.lat, inc.location.lng));
+        });
+      });
       this.map.fitBounds(bounds);
     }
   }
@@ -470,21 +602,42 @@ export class ZonasPeligrosas implements OnInit, OnDestroy {
       return 'No hay zonas peligrosas detectadas en este momento.';
     }
 
-    const criticalZones = this.dangerZones.filter(z => z.severity === 'critical').length;
-    const highRiskZones = this.dangerZones.filter(z => z.severity === 'high').length;
-
     let message = `🚨 ALERTA DE SEGURIDAD\n\n`;
     message += `Se han detectado ${this.dangerZones.length} zona${this.dangerZones.length > 1 ? 's' : ''} peligrosa${this.dangerZones.length > 1 ? 's' : ''} en tu área:\n\n`;
 
-    if (criticalZones > 0) {
-      message += `⚠️ ${criticalZones} zona${criticalZones > 1 ? 's' : ''} de riesgo CRÍTICO\n`;
+    if (this.criticalZones > 0) {
+      message += `⚠️ ${this.criticalZones} zona${this.criticalZones > 1 ? 's' : ''} de riesgo CRÍTICO\n`;
     }
-    if (highRiskZones > 0) {
-      message += `⚠️ ${highRiskZones} zona${highRiskZones > 1 ? 's' : ''} de riesgo ALTO\n`;
+    if (this.highRiskZones > 0) {
+      message += `⚠️ ${this.highRiskZones} zona${this.highRiskZones > 1 ? 's' : ''} de riesgo ALTO\n`;
     }
 
     message += `\nEvita estas áreas y mantente alerta. Tu seguridad es nuestra prioridad.`;
 
     return message;
+  }
+
+  private generateZoneInfoContent(zone: DangerZone): string {
+    return `
+      <div style="padding: 8px; font-family: Arial, sans-serif;">
+        <h3 style="margin: 0 0 8px 0; color: #333; font-size: 14px;">${zone.name}</h3>
+        <p style="margin: 0 0 4px 0; color: #666; font-size: 12px;"><strong>Severidad:</strong> ${this.getSeverityLabel(zone.severity)}</p>
+        <p style="margin: 0 0 4px 0; color: #666; font-size: 12px;"><strong>Incidentes:</strong> ${zone.incidentCount}</p>
+        <p style="margin: 0 0 4px 0; color: #666; font-size: 12px;"><strong>Radio:</strong> ${zone.radius}m</p>
+        <p style="margin: 0; color: #888; font-size: 11px;">${zone.description}</p>
+      </div>
+    `;
+  }
+
+  private generateIncidentInfoContent(incident: Incident, zone: DangerZone): string {
+    return `
+      <div style="padding: 8px; font-family: Arial, sans-serif;">
+        <h3 style="margin: 0 0 8px 0; color: #333; font-size: 14px;">Incidente: ${incident.type}</h3>
+        <p style="margin: 0 0 4px 0; color: #666; font-size: 12px;"><strong>Zona:</strong> ${zone.name}</p>
+        <p style="margin: 0 0 4px 0; color: #666; font-size: 12px;"><strong>Severidad:</strong> ${this.getSeverityLabel(incident.severity)}</p>
+        <p style="margin: 0 0 4px 0; color: #666; font-size: 12px;"><strong>Reportado:</strong> ${this.formatDate(incident.reportedAt)}</p>
+        ${incident.description ? `<p style="margin: 0; color: #888; font-size: 11px;">${incident.description}</p>` : ''}
+      </div>
+    `;
   }
 }

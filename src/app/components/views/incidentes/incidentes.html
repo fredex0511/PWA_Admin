@@ -42,41 +42,208 @@
     </ion-card>
   </div> -->
 
-  <div class="incidents-list">
-    <ion-card *ngFor="let incident of incidentes" class="incident-card">
-      <ion-card-header>
-        <div class="incident-header">
-          <div class="incident-title">
-            <h3>{{ incident.title }}</h3>
-            <!-- <ion-badge [color]="getSeverityColor(incident.severity)">{{ incident.severity }}</ion-badge> -->
+  <div class="incidents-scroll">
+    <div class="incidents-list">
+      <ion-card *ngFor="let incident of incidentes" class="incident-card">
+        <ion-card-header>
+          <div class="incident-header">
+            <div class="incident-title">
+              <h3>Incidente #{{ incident.id }}</h3>
+              <ion-badge [color]="getTypeColor(incident.type)">{{ getTypeLabel(incident.type) }}</ion-badge>
+            </div>
+            <div class="incident-time">{{ incident.date | date: 'short' }}</div>
           </div>
-          
-          <div class="incident-time">{{ incident.time }}</div>
-        </div>
-      </ion-card-header>
+        </ion-card-header>
       
-      <ion-card-content>
-        <p class="incident-description">{{ incident.description }}</p>
-        <div class="incident-footer">
-          <!-- <div class="status-container">
-            <span class="status-label">Estado:</span>
-            <ion-chip [class]="'status-' + incident.status.toLowerCase()">
-              {{ incident.status }}
-            </ion-chip>
-          </div> -->
-          <!-- <div class="incident-actions">
-            <ion-button fill="clear" size="small">
-              <ion-icon name="eye-outline"></ion-icon>
-            </ion-button>
-            <ion-button fill="clear" size="small">
-              <ion-icon name="create-outline"></ion-icon>
-            </ion-button>
-            <ion-button fill="clear" size="small" color="success">
-              <ion-icon name="checkmark-outline"></ion-icon>
-            </ion-button>
-          </div> -->
-        </div>
-      </ion-card-content>
-    </ion-card>
+        <ion-card-content>
+          <div class="incident-info">
+            <div class="info-row" *ngIf="incident.description && incident.description !== 'null'">
+              <ion-icon name="document-text-outline"></ion-icon>
+              <p><strong>Descripción:</strong> {{ incident.description }}</p>
+            </div>
+            
+            <div class="info-row" *ngIf="incident.place">
+              <ion-icon name="location-outline"></ion-icon>
+              <p><strong>Ubicación:</strong> {{ incident.place.name }}</p>
+            </div>
+
+            <div class="info-row" *ngIf="incident.incidentType.name">
+              <ion-icon name="location-outline"></ion-icon>
+              <p><strong>Tipo de Incidente:</strong> {{ incident.incidentType.name }}</p>
+            </div>
+
+
+            <div class="info-row" *ngIf="incident.routeRun && incident.routeRun.route">
+              <ion-icon name="navigate-outline"></ion-icon>
+              <p><strong>Ruta:</strong> {{ incident.routeRun.route.name }}</p>
+            </div>
+
+            <div class="info-row" *ngIf="incident.routeRun && incident.routeRun.user">
+              <ion-icon name="person-outline"></ion-icon>
+              <p><strong>Usuario:</strong> {{ incident.routeRun.user.name }}</p>
+            </div>
+
+            <div class="info-row" *ngIf="incident.evidences && incident.evidences.length > 0">
+              <ion-icon name="document-attach-outline"></ion-icon>
+              <p><strong>Evidencias:</strong> {{ incident.evidences.length }} archivo(s)</p>
+            </div>
+          </div>
+
+          <div class="incident-footer">
+            <div class="status-container">
+              <span class="status-label">Estado:</span>
+              <ion-chip [color]="getStatusColor(incident.status)">
+                {{ getStatusLabel(incident.status) }}
+              </ion-chip>
+            </div>
+            
+            <div class="incident-actions">
+              <ion-button fill="solid" size="small" color="primary" (click)="updateIncident(incident)">
+                <ion-icon name="create-outline" slot="start"></ion-icon>
+                Actualizar
+              </ion-button>
+              <ion-button fill="solid" size="small" color="secondary" (click)="viewOnMap(incident)">
+                <ion-icon name="map-outline" slot="start"></ion-icon>
+                Mapa
+              </ion-button>
+              <ion-button 
+                fill="solid" 
+                size="small" 
+                color="tertiary" 
+                (click)="viewEvidences(incident)"
+                *ngIf="incident.evidences && incident.evidences.length > 0">
+                <ion-icon name="images-outline" slot="start"></ion-icon>
+                Evidencias
+              </ion-button>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
   </div>
 </div>
+
+<!-- Modal de Mapa -->
+<ion-modal [isOpen]="isMapModalOpen" (didDismiss)="onMapModalDismiss()" class="map-modal">
+  <ng-template ionModalContent>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-buttons slot="start">
+          <ion-button (click)="closeMapModal()">
+            <ion-icon name="close-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Ubicación del Incidente</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <div *ngIf="selectedIncident" class="map-info">
+        <h3>Incidente #{{ selectedIncident.id }}</h3>
+        <p *ngIf="selectedIncident.description && selectedIncident.description !== 'null'">
+          {{ selectedIncident.description }}
+        </p>
+        <ion-badge [color]="getTypeColor(selectedIncident.type)">
+          {{ getTypeLabel(selectedIncident.type) }}
+        </ion-badge>
+      </div>
+      <div id="incidentMap" class="incident-map"></div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<!-- Modal de Evidencias -->
+<ion-modal [isOpen]="isEvidenceModalOpen" (didDismiss)="onEvidenceModalDismiss()" class="evidence-modal">
+  <ng-template ionModalContent>
+    <ion-header>
+      <ion-toolbar color="tertiary">
+        <ion-buttons slot="start">
+          <ion-button (click)="closeEvidenceModal()">
+            <ion-icon name="arrow-back-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Evidencias del Incidente</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content *ngIf="selectedIncident" class="evidence-modal-content">
+      <!-- Información del Incidente -->
+      <div class="evidence-detail-section">
+        <div class="section-title">Información</div>
+        <ion-item lines="none">
+          <ion-label>
+            <div class="label-strong">Incidente #{{ selectedIncident.id }}</div>
+            <div class="label-value" *ngIf="selectedIncident.description && selectedIncident.description !== 'null'">
+              {{ selectedIncident.description }}
+            </div>
+          </ion-label>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-label>
+            <div class="label-strong">Fecha:</div>
+            <div class="label-value">{{ selectedIncident.date | date: 'medium' }}</div>
+          </ion-label>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-label>
+            <div class="label-strong">Tipo de Riesgo:</div>
+            <ion-badge [color]="getTypeColor(selectedIncident.type)">
+              {{ getTypeLabel(selectedIncident.type) }}
+            </ion-badge>
+          </ion-label>
+        </ion-item>
+      </div>
+
+      <!-- Evidencias -->
+      <div class="evidence-detail-section" *ngIf="selectedIncident.evidences && selectedIncident.evidences.length > 0">
+        <div class="section-title">
+          Evidencias ({{ selectedIncident.evidences.length }})
+        </div>
+        
+        <div *ngIf="loadingEvidences" class="loading-evidences">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Cargando evidencias...</p>
+        </div>
+
+        <div class="evidences-grid">
+          <div *ngFor="let evidence of selectedIncident.evidences" class="evidence-item">
+            <div class="evidence-header">
+              <ion-icon 
+                [name]="isImageEvidence(evidence) ? 'image-outline' : isAudioEvidence(evidence) ? 'volume-high-outline' : isVideoEvidence(evidence) ? 'videocam-outline' : 'document-outline'"
+                class="evidence-icon"
+              ></ion-icon>
+              <span class="evidence-name">{{ evidence.file_name }}</span>
+            </div>
+            
+            <!-- Preview de Imagen -->
+            <div *ngIf="isImageEvidence(evidence) && getEvidenceUrl(evidence.id)" class="evidence-preview">
+              <img [src]="getEvidenceUrl(evidence.id)" [alt]="evidence.file_name" />
+            </div>
+
+            <!-- Audio Player -->
+            <div *ngIf="isAudioEvidence(evidence) && getEvidenceUrl(evidence.id)" class="evidence-audio">
+              <audio controls [src]="getEvidenceUrl(evidence.id)">
+                Tu navegador no soporta audio HTML5.
+              </audio>
+            </div>
+
+            <!-- Video Player -->
+            <div *ngIf="isVideoEvidence(evidence) && getEvidenceUrl(evidence.id)" class="evidence-video">
+              <video controls [src]="getEvidenceUrl(evidence.id)">
+                Tu navegador no soporta video HTML5.
+              </video>
+            </div>
+
+            <div class="evidence-info">
+              <span class="evidence-size">{{ evidence.file_size ? (evidence.file_size / 1024).toFixed(2) : '0' }} KB</span>
+              <span class="evidence-type">{{ evidence.file_type }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!selectedIncident.evidences || selectedIncident.evidences.length === 0" class="no-evidences-message">
+        <ion-icon name="document-outline" class="no-evidence-icon"></ion-icon>
+        <p>No hay evidencias registradas para este incidente</p>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

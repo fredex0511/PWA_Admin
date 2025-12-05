@@ -19,7 +19,7 @@ export class IncidentsService {
     return this.http.get(this.API_URL + id);
   }
 
-  updateIncident(id: string, data: any): Observable<any> {
+  updateIncident(id: number, data: any): Observable<any> {
     return this.http.put(this.API_URL + id, data);
   }
 

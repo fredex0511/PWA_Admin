@@ -7,15 +7,38 @@
     </div>
     <div class="stats-container">
       <div class="stat-item">
+        <ion-icon name="alert-circle" [style.color]="'#eb445a'" class="stat-icon"></ion-icon>
+        <span class="stat-number">{{ criticalZones }}</span>
+        <span class="stat-label">Zonas Muy Peligrosas</span>
+      </div>
+      <div class="stat-item">
+        <ion-icon name="warning" [style.color]="'#ffc409'" class="stat-icon"></ion-icon>
+        <span class="stat-number">{{ highRiskZones }}</span>
+        <span class="stat-label">Zonas Peligrosas</span>
+      </div>
+      <div class="stat-item">
+        <ion-icon name="alert" [style.color]="'#6030ff'" class="stat-icon"></ion-icon>
+        <span class="stat-number">{{ mediumRiskZones }}</span>
+        <span class="stat-label">Zonas Medias</span>
+      </div>
+      <div class="stat-item">
+        <ion-icon name="checkmark-circle" [style.color]="'#2dd36f'" class="stat-icon"></ion-icon>
+        <span class="stat-number">{{ lowRiskZones }}</span>
+        <span class="stat-label">Zonas Sin Peligro</span>
+      </div>
+      <div class="stat-item">
+        <ion-icon name="location" [style.color]="'#92BEE0'" class="stat-icon"></ion-icon>
         <span class="stat-number">{{ dangerZones.length }}</span>
         <span class="stat-label">Zonas Activas</span>
       </div>
       <div class="stat-item">
+        <ion-icon name="analytics" [style.color]="'#92BEE0'" class="stat-icon"></ion-icon>
         <span class="stat-number">{{ totalIncidents }}</span>
         <span class="stat-label">Incidentes Base</span>
       </div>
       <div class="stat-item">
-        <span class="stat-number">50m</span>
+        <ion-icon name="radio-button-on" [style.color]="'#92BEE0'" class="stat-icon"></ion-icon>
+        <span class="stat-number">100-400M</span>
         <span class="stat-label">Radio Seguridad</span>
       </div>
     </div>

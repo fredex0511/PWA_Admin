@@ -251,3 +251,53 @@ ion-button[color="success"] {
   color: #fff;
 }
 
+/* Incident Type Select Styles */
+.incident-type-container {
+  margin-bottom: 12px;
+}
+
+.incident-type-label {
+  display: block;
+  color: #92BEE0;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+}
+
+.incident-type-select {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(146, 190, 224, 0.05);
+  border: 1px solid #92BEE0;
+  border-radius: 0.5rem;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.incident-type-select:focus {
+  background: rgba(146, 190, 224, 0.1);
+  border-color: #92BEE0;
+  box-shadow: 0 0 0 3px rgba(146, 190, 224, 0.2);
+}
+
+.incident-type-select option {
+  background: #1a1a1a;
+  color: #fff;
+  padding: 10px;
+}
+
+.incident-type-select option:disabled {
+  color: #666;
+}
+
+/* Disabled button style */
+ion-button[disabled] {
+  --background: rgba(146, 190, 224, 0.3) !important;
+  --color: rgba(255, 255, 255, 0.5) !important;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
