@@ -20,3 +20,19 @@ export interface User {
   routeRuns?: RouteRun []
   deletedAt?: string| null
 }
+
+export interface UserSnakeCase {
+  id: number;
+  name: string;
+  role_id: number;
+  email: string;
+  remember_me_token: string | null;
+  deleted_at: string | null;
+  created_at: string;
+  updated_at: string;
+  password?: string;
+  role?: Role | null;
+  contacts?: Contact[];
+  routes?: Route[];
+  route_runs?: RouteRun[];
+}

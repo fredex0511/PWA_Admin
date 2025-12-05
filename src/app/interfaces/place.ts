@@ -15,3 +15,17 @@ export interface Place {
   updatedAt: string
   deletedAt?: string | null
 }
+
+export interface PlaceSnake {
+  id: number
+  lat: number
+  long: number
+  name: string
+  type: PlaceType
+  incidents?: Incident[]
+  start_routes?: Route[]
+  end_routes?: Route[]
+  created_at: string
+  updated_at: string
+  deleted_at?: string | null
+}

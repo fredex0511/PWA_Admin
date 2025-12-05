@@ -8,6 +8,233 @@ import { Route } from 'src/app/interfaces/route';
 import { RunroutesService } from 'src/app/services/runroutes';
 import { RouteRun } from 'src/app/interfaces/route-run';
 import { SocketService } from 'src/app/services/socket/socket';
+import { IncidentsService } from 'src/app/services/incidents';
+
+/**
+ * BACKEND VALIDATOR ADONIS - CreateIncidentValidator.ts
+ * 
+ * import { schema, CustomMessages, rules } from "@ioc:Adonis/Core/Validator";
+ * import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
+ * 
+ * export default class CreateIncidentValidator {
+ *   constructor(protected ctx: HttpContextContract) {}
+ * 
+ *   public schema = schema.create({
+ *     date: schema.date({}),
+ *     routeRunId: schema.number([
+ *       rules.exists({ table: "route_runs", column: "id" }),
+ *     ]),
+ *     description: schema.string.optional(),
+ *     // placeId: Se genera automáticamente en el backend según geolocalización
+ *   });
+ * 
+ *   public messages: CustomMessages = {};
+ * }
+ * 
+ * BACKEND MULTER CONFIG - config/drive.ts
+ * 
+ * export const driveConfig = {
+ *   disk: 'local',
+ *   disks: {
+ *     local: {
+ *       driver: 'local',
+ *       visibility: 'private',
+ *       basePath: './storage/uploads/incidents',
+ *     },
+ *   },
+ * };
+ * 
+ * BACKEND MIDDLEWARE - app/Middleware/HandleMultipartForm.ts
+ * 
+ * import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
+ * import multer from 'multer';
+ * import path from 'path';
+ * 
+ * export default class HandleMultipartForm {
+ *   public async handle({ request }: HttpContextContract, next: () => Promise<void>) {
+ *     if (request.method() === 'POST' && request.is(['multipart/form-data'])) {
+ *       const upload = multer({
+ *         storage: multer.diskStorage({
+ *           destination: (req, file, cb) => {
+ *             cb(null, 'storage/uploads/incidents/');
+ *           },
+ *           filename: (req, file, cb) => {
+ *             const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+ *             cb(null, uniqueSuffix + path.extname(file.originalname));
+ *           },
+ *         }),
+ *         limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
+ *         fileFilter: (req, file, cb) => {
+ *           const allowedMimes = [
+ *             'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+ *             'video/mp4', 'video/webm', 'video/quicktime',
+ *             'audio/webm', 'audio/mpeg', 'audio/wav', 'audio/ogg'
+ *           ];
+ *           if (allowedMimes.includes(file.mimetype)) {
+ *             cb(null, true);
+ *           } else {
+ *             cb(new Error(`Tipo de archivo no permitido: ${file.mimetype}`), false);
+ *           }
+ *         },
+ *       });
+ * 
+ *       await new Promise<void>((resolve, reject) => {
+ *         upload.any()(req, res, (err: any) => {
+ *           if (err) reject(err);
+ *           else resolve();
+ *         });
+ *       });
+ *     }
+ *     await next();
+ *   }
+ * }
+ * 
+ * BACKEND CONTROLLER - app/Controllers/Http/IncidentsController.ts
+ * 
+ * import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
+ * import Incident from "App/Models/Incident";
+ * import CreateIncidentValidator from "App/Validators/CreateIncidentValidator";
+ * 
+ * export default class IncidentsController {
+ *   public async create({ request, response }: HttpContextContract) {
+ *     const data = await request.validate(CreateIncidentValidator);
+ * 
+ *     // Obtener archivos enviados
+ *     const files = request.files('files', {
+ *       size: '100mb',
+ *       extnames: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'webm', 'mov', 'webm', 'mp3', 'wav', 'ogg'],
+ *     });
+ * 
+ *     console.log('FormData recibido:', {
+ *       date: data.date,
+ *       routeRunId: data.routeRunId,
+ *       description: data.description,
+ *       filesCount: files.length,
+ *       fileDetails: files.map((f: any) => ({
+ *         fieldname: f.fieldname,      // 'files'
+ *         originalname: f.clientName,  // 'photo-1701731430123.jpg'
+ *         mimetype: f.headers['content-type'],
+ *         size: f.size,
+ *         path: f.tmpPath, // Ruta temporal antes de guardar
+ *       })),
+ *     });
+ * 
+ *     // Crear incidente
+ *     const incident = await Incident.create({
+ *       date: data.date,
+ *       routeRunId: data.routeRunId,
+ *       description: data.description || '',
+ *     });
+ * 
+ *     // Guardar archivos
+ *     for (let file of files) {
+ *       const fileName = `${Date.now()}-${file.clientName}`;
+ *       await file.move('storage/uploads/incidents', { name: fileName });
+ *       
+ *       // Guardar referencia en tabla de evidencias
+ *       await incident.related('evidences').create({
+ *         filePath: `uploads/incidents/${fileName}`,
+ *         fileType: file.headers['content-type'],
+ *         fileName: file.clientName,
+ *       });
+ *     }
+ * 
+ *     return response.created(incident);
+ *   }
+ * }
+ * 
+ * BACKEND MODEL - app/Models/Incident.ts
+ * 
+ * import { DateTime } from 'luxon'
+ * import { BaseModel, column, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm'
+ * import Evidence from './Evidence'
+ * 
+ * export default class Incident extends BaseModel {
+ *   public static table = 'incidents'
+ * 
+ *   @column({ isPrimary: true })
+ *   public id: number
+ * 
+ *   @column()
+ *   public date: DateTime
+ * 
+ *   @column()
+ *   public placeId: number
+ * 
+ *   @column()
+ *   public routeRunId: number
+ * 
+ *   @column()
+ *   public description: string
+ * 
+ *   @hasMany(() => Evidence)
+ *   public evidences: HasMany<typeof Evidence>
+ * 
+ *   @column.dateTime({ autoCreate: true })
+ *   public createdAt: DateTime
+ * 
+ *   @column.dateTime({ autoCreate: true, autoUpdate: true })
+ *   public updatedAt: DateTime
+ * }
+ * 
+ * BACKEND EVIDENCE MODEL - app/Models/Evidence.ts
+ * 
+ * import { DateTime } from 'luxon'
+ * import { BaseModel, column, belongsTo, BelongsTo } from '@ioc:Adonis/Lucid/Orm'
+ * import Incident from './Incident'
+ * 
+ * export default class Evidence extends BaseModel {
+ *   public static table = 'evidences'
+ * 
+ *   @column({ isPrimary: true })
+ *   public id: number
+ * 
+ *   @column()
+ *   public incidentId: number
+ * 
+ *   @column()
+ *   public filePath: string // uploads/incidents/1701731430123.jpg
+ * 
+ *   @column()
+ *   public fileType: string // image/jpeg, audio/webm, video/mp4, etc
+ * 
+ *   @column()
+ *   public fileName: string // photo-1701731430123.jpg
+ * 
+ *   @belongsTo(() => Incident)
+ *   public incident: BelongsTo<typeof Incident>
+ * 
+ *   @column.dateTime({ autoCreate: true })
+ *   public createdAt: DateTime
+ * 
+ *   @column.dateTime({ autoCreate: true, autoUpdate: true })
+ *   public updatedAt: DateTime
+ * }
+ * 
+ * DATABASE MIGRATION - database/migrations/XXXX_create_evidences_table.ts
+ * 
+ * import BaseSchema from '@ioc:Adonis/Lucid/Schema'
+ * 
+ * export default class extends BaseSchema {
+ *   protected tableName = 'evidences'
+ * 
+ *   public async up() {
+ *     this.schema.createTable(this.tableName, (table) => {
+ *       table.increments('id')
+ *       table.integer('incident_id').unsigned().references('incidents.id').onDelete('CASCADE')
+ *       table.string('file_path').notNullable() // uploads/incidents/1701731430123.jpg
+ *       table.string('file_type').notNullable()  // image/jpeg, audio/webm, etc
+ *       table.string('file_name').notNullable()  // photo-1701731430123.jpg
+ *       table.timestamp('created_at', { useTz: true })
+ *       table.timestamp('updated_at', { useTz: true })
+ *     })
+ *   }
+ * 
+ *   public async down() {
+ *     this.schema.dropTable(this.tableName)
+ *   }
+ * }
+ */
 
 interface UserPath {
   route_id?:number
@@ -43,6 +270,7 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
   private autocompleteService: any = null;
   private runrouterActive : RouteRun | null = null
   private locationPollingInterval: any = null;
+  private currentUserLocation: { lat: number; lng: number } | null = null;
 
   //sokcet
    private streamingContext: AudioContext | null = null;
@@ -142,7 +370,7 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
     }
   }
 
-  constructor(private alertController: AlertController, private ngZone: NgZone, private routeService : RouteService, private runRouteService: RunroutesService ,private socketService: SocketService) {}
+  constructor(private incidentsService:IncidentsService,private alertController: AlertController, private ngZone: NgZone, private routeService : RouteService, private runRouteService: RunroutesService ,private socketService: SocketService) {}
 
   ngOnInit() {
     try { this.token = localStorage.getItem('walksafe_token'); } catch (e) { this.token = null; }
@@ -283,15 +511,77 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
         { text: 'Iniciar', handler: () => {
-          this.ngZone.run(() => {
-            this.activePath = path;
-            this.initRouterRun()
-            setTimeout(() => this.initMobileMap(), 200);
+          this.ngZone.run(async () => {
+            // Solicitar permisos antes de iniciar
+            const permissionsGranted = await this.requestPermissions();
+            if (permissionsGranted) {
+              this.activePath = path;
+              this.initRouterRun()
+              setTimeout(() => this.initMobileMap(), 200);
+            }
           });
         } }
       ]
     });
     await alert.present();
+  }
+
+  private async requestPermissions(): Promise<boolean> {
+    try {
+      let allGranted = true;
+
+      // Pedir permiso de cámara
+      try {
+        await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        console.log('[Permissions] Cámara permitida');
+      } catch (err) {
+        console.warn('[Permissions] Cámara denegada:', err);
+        allGranted = false;
+      }
+
+      // Pedir permiso de micrófono
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+        console.log('[Permissions] Micrófono permitido');
+      } catch (err) {
+        console.warn('[Permissions] Micrófono denegado:', err);
+        allGranted = false;
+      }
+
+      // Pedir permiso de geolocalización
+      try {
+        await new Promise<void>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(
+            () => {
+              console.log('[Permissions] Geolocalización permitida');
+              resolve();
+            },
+            (err) => {
+              console.warn('[Permissions] Geolocalización denegada:', err);
+              reject(err);
+            }
+          );
+        });
+      } catch (err) {
+        allGranted = false;
+      }
+
+      if (!allGranted) {
+        const permAlert = await this.alertController.create({
+          header: 'Permisos Requeridos',
+          message: 'Se requieren permisos de cámara, micrófono y geolocalización para usar esta funcionalidad.',
+          buttons: ['OK']
+        });
+        await permAlert.present();
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('[Permissions] Error:', error);
+      return false;
+    }
   }
 
   saveNewPath() {
@@ -514,6 +804,14 @@ this.runRouteService
     console.log('[Send] stopped streaming');
   }
 
+
+  // Incident management
+  recordingIncident = false;
+  incidentEvidence: any[] = [];
+  incidentDescription = '';
+  private incidentAudioChunks: Blob[] = [];
+  private mediaRecorder: any = null;
+
   private startLocationPolling() {
     // Obtener ubicación inicial
     this.sendCurrentLocation();
@@ -529,6 +827,12 @@ this.runRouteService
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
+          
+          // Guardar la ubicación actual del usuario
+          this.currentUserLocation = {
+            lat: latitude,
+            lng: longitude
+          };
           
           // Actualizar la ubicación del path activo
           if (this.activePath) {
@@ -547,7 +851,7 @@ this.runRouteService
             long: longitude,
             timestamp: new Date().toISOString()
           });
-          console.log('[Location] Enviada ubicación:', { lat: latitude, long: longitude });
+          console.log('[Location] Enviada ubicación:', { lat: latitude, lng: longitude });
         },
         (error) => {
           console.warn('[Location] Error obteniendo ubicación:', error);
@@ -556,6 +860,209 @@ this.runRouteService
       );
     } else {
       console.warn('[Location] Geolocation no disponible');
+    }
+  }
+
+  // Incident Methods
+  startIncident() {
+    this.recordingIncident = true;
+    this.incidentEvidence = [];
+    this.incidentDescription = '';
+    this.incidentAudioChunks = [];
+    console.log('[Incident] Iniciando grabación de incidente');
+    
+    // Iniciar grabación de audio
+    this.startAudioRecording();
+  }
+
+  private async startAudioRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.mediaRecorder = new (window as any).MediaRecorder(stream);
+      this.mediaRecorder.ondataavailable = (event: any) => {
+        if (event.data.size > 0) {
+          this.incidentAudioChunks.push(event.data);
+        }
+      };
+      this.mediaRecorder.start();
+      console.log('[Audio] Grabación iniciada');
+    } catch (error) {
+      console.error('[Audio] Error al iniciar grabación:', error);
+    }
+  }
+
+  async capturePhoto() {
+    try {
+      // Usar input de file con capture para acceso directo a cámara
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.capture = 'environment';
+      input.onchange = (event: any) => {
+        const file = event.target.files[0];
+        if (file) {
+          this.addEvidence(file, 'image');
+          console.log('[Camera] Foto capturada desde cámara nativa');
+        }
+      };
+      input.click();
+    } catch (error) {
+      console.error('[Camera] Error:', error);
+      const errorAlert = await this.alertController.create({
+        header: 'Error de Cámara',
+        message: 'No se pudo acceder a la cámara',
+        buttons: ['OK']
+      });
+      await errorAlert.present();
+    }
+  }
+
+  openFile() {
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  }
+
+  onFileSelected(event: any) {
+    const files = event.target.files;
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const type = file.type.startsWith('image/') ? 'image' : 
+                    file.type.startsWith('video/') ? 'video' : 
+                    file.type.startsWith('audio/') ? 'audio' : 'file';
+        this.addEvidence(file, type);
+      }
+    }
+  }
+
+  private addEvidence(file: File, type: string) {
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.ngZone.run(() => {
+        this.incidentEvidence.push({
+          file,
+          type,
+          url: e.target.result,
+          name: file.name
+        });
+        console.log('[Evidence] Agregada evidencia:', file.name);
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeEvidence(index: number) {
+    this.incidentEvidence.splice(index, 1);
+    console.log('[Evidence] Evidencia removida');
+  }
+
+  async closeIncident() {
+    try {
+      // Detener grabación de audio y esperar a que se procese
+      if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+        await new Promise<void>((resolve) => {
+          const onStop = () => {
+            this.mediaRecorder.removeEventListener('stop', onStop);
+            resolve();
+          };
+          this.mediaRecorder.addEventListener('stop', onStop);
+          this.mediaRecorder.stop();
+        });
+      }
+
+      // Crear blob de audio después de que mediaRecorder haya terminado
+      let audioBlob: Blob | null = null;
+      if (this.incidentAudioChunks.length > 0) {
+        audioBlob = new Blob(this.incidentAudioChunks, { type: 'audio/webm' });
+        this.incidentEvidence.push({
+          file: new File([audioBlob], 'incident-audio.webm', { type: 'audio/webm' }),
+          type: 'audio',
+          url: URL.createObjectURL(audioBlob),
+          name: 'incident-audio.webm'
+        });
+        console.log('[Audio] Audio del incidente agregado:', { size: audioBlob.size, type: audioBlob.type });
+      }
+
+      console.log('[Incident] Enviando incidente con evidencia:', this.incidentEvidence);
+      console.log('[Incident] Descripción:', this.incidentDescription);
+
+      // Crear FormData para enviar archivos
+      // ESTRUCTURA PARA EL BACKEND:
+      // - date: string (ISO 8601 format) - Fecha/hora del incidente
+      // - routeRunId: number - ID del recorrido activo
+      // - description: string - Descripción del incidente
+      // - locationLatLng: object - { lat: number, lng: number } - Ubicación del incidente
+      // - files: File[] - Array de archivos en FormData con clave "files"
+      //   Cada archivo se agrega con: formData.append('files', file, filename)
+      //   Los nombres de archivo preservan su extensión original
+      
+      const formData = new FormData();
+      
+      // Información del incidente
+      formData.append('date', new Date().toISOString());
+      formData.append('routeRunId', this.runrouterActive?.id?.toString() || '0');
+      formData.append('description', this.incidentDescription || '');
+      
+      // Agregar ubicación del incidente (ubicación actual del usuario)
+      if (this.currentUserLocation) {
+        formData.append('lat', this.currentUserLocation.lat.toString())
+        formData.append('lng', this.currentUserLocation.lng.toString())
+        console.log('[Incident] Ubicación actual agregada:', this.currentUserLocation);
+      }
+
+      // Agregar todos los archivos de evidencia con la clave "files"
+      // El backend recibirá esto en req.files o req.file.files
+      this.incidentEvidence.forEach((evidence) => {
+        // Añadir con nombre de archivo preservado (ej: photo.jpg, audio.webm, video.mp4)
+        formData.append('files', evidence.file, evidence.file.name);
+        console.log(`[FormData] Agregado archivo: ${evidence.file.name} (${evidence.type})`);
+      });
+
+      console.log('[Incident] FormData preparado con', this.incidentEvidence.length, 'archivo(s)');
+
+      // Enviar al servidor
+      this.incidentsService.createIncident(formData).subscribe({
+        next: async (resp) => {
+          console.log('[Incident] Incidente creado exitosamente:', resp);
+          
+          // Mostrar confirmación
+          const alert = await this.alertController.create({
+            header: 'Incidente Guardado',
+            message: `Se registró el incidente con ${this.incidentEvidence.length} archivo(s) de evidencia.`,
+            buttons: ['OK']
+          });
+          await alert.present();
+
+          // Resetear
+          this.recordingIncident = false;
+          this.incidentEvidence = [];
+          this.incidentDescription = '';
+          this.incidentAudioChunks = [];
+        },
+        error: async (err) => {
+          console.error('[Incident] Error al crear incidente:', err);
+          let message = 'Error al guardar el incidente';
+          if (err.error?.msg) {
+            message = err.error.msg;
+          }
+          const errorAlert = await this.alertController.create({
+            header: 'Error',
+            message,
+            buttons: ['OK']
+          });
+          await errorAlert.present();
+        }
+      });
+    } catch (error) {
+      console.error('[Incident] Error al cerrar:', error);
+      const alert = await this.alertController.create({
+        header: 'Error',
+        message: 'Error procesando el incidente',
+        buttons: ['OK']
+      });
+      await alert.present();
     }
   }
 

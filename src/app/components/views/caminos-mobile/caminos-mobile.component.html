@@ -39,9 +39,67 @@
         <div class="active-path-title">{{ activePath.name }}</div>
         <div id="mobileGmap" class="map-container"></div>
         <ion-button expand="block" color="danger" (click)="endActivePath()">Finalizar viaje</ion-button>
-        <div style="">
-          <ion-button fill="outline" size="small">Iniciar incidentes</ion-button>
-        <ion-button fill="outline" size="small">Cerrar incidentes</ion-button>
+        
+        <!-- Incident Controls -->
+        <div class="incident-controls" *ngIf="!recordingIncident">
+          <ion-button expand="block" color="warning" (click)="startIncident()">
+            <ion-icon slot="start" name="alert-circle-outline"></ion-icon>
+            Iniciar Incidente
+          </ion-button>
+        </div>
+
+        <div class="incident-recording" *ngIf="recordingIncident">
+          <div class="incident-header">
+            <span class="recording-badge">
+              <span class="pulse"></span>
+              Grabando Incidente
+            </span>
+          </div>
+          
+          <!-- Camera and Audio Controls -->
+          <div class="incident-media-controls">
+            <ion-button fill="outline" color="primary" (click)="capturePhoto()">
+              <ion-icon slot="start" name="camera-outline"></ion-icon>
+              Tomar Foto
+            </ion-button>
+            <ion-button fill="outline" color="medium" (click)="openFile()">
+              <ion-icon slot="start" name="attach-outline"></ion-icon>
+              Adjuntar Archivo
+            </ion-button>
+            <input type="file" #fileInput hidden (change)="onFileSelected($event)" accept="image/*,video/*,audio/*" multiple />
+          </div>
+
+          <!-- Evidence Preview -->
+          <div class="evidence-list" *ngIf="incidentEvidence.length > 0">
+            <div class="evidence-item" *ngFor="let evidence of incidentEvidence; let i = index">
+              <div class="evidence-preview">
+                <img *ngIf="evidence.type === 'image'" [src]="evidence.url" alt="Foto" />
+                <div *ngIf="evidence.type === 'video'" class="video-placeholder">
+                  <ion-icon name="play-circle"></ion-icon>
+                </div>
+                <div *ngIf="evidence.type === 'audio'" class="audio-placeholder">
+                  <ion-icon name="microphone"></ion-icon>
+                </div>
+              </div>
+              <ion-button size="small" fill="clear" color="danger" (click)="removeEvidence(i)">
+                <ion-icon name="close-circle"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+
+          <!-- Description and Close -->
+          <div class="incident-footer">
+            <ion-input 
+              type="text" 
+              placeholder="Descripción del incidente (opcional)" 
+              [(ngModel)]="incidentDescription"
+              clearInput>
+            </ion-input>
+            <ion-button expand="block" color="success" (click)="closeIncident()">
+              <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+              Guardar Incidente
+            </ion-button>
+          </div>
         </div>
       </div>
     </ng-container>
