@@ -5,6 +5,7 @@ import { RouteRun } from "./route-run";
 
 export interface User {
   id: number;
+  status:boolean;
   name: string;
   role_id: number;
   email: string;
@@ -23,6 +24,7 @@ export interface User {
 
 export interface UserSnakeCase {
   id: number;
+  status:boolean;
   name: string;
   role_id: number;
   email: string;

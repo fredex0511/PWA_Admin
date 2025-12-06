@@ -16,8 +16,8 @@ export class DashboardComponent {
   public appPages = [
     { title: 'Caminos', url: '/dashboard/caminos', icon: 'walk' },
     { title: 'Incidentes', url: '/dashboard/incidentes', icon: 'warning' },
-    { title: 'Monitoreadores', url: '/dashboard/monitoreadores', icon: 'people' },
     { title: 'Zonas Peligrosas', url: '/dashboard/zonas-peligrosas', icon: 'alert' },
+    { title: 'Usuarios', url: '/dashboard/monitoreadores', icon: 'people' },
   ];
   public labels = ['Family', 'Friends', 'Notes', 'Work', 'Travel', 'Reminders'];
   public collapsed = false;

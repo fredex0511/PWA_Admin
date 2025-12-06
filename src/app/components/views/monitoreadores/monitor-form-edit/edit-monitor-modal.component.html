@@ -1,0 +1,62 @@
+<div class="modal-container">
+  <div class="modal-header">
+    <h2>Editar Monitoreador</h2>
+  </div>
+
+  <form [formGroup]="monitorForm" (ngSubmit)="save()" class="edit-monitor-form">
+    <div class="form-content">
+      <ion-item>
+        <ion-label position="floating">Nombre Completo</ion-label>
+        <ion-input 
+          formControlName="name" 
+          type="text" 
+          required>
+        </ion-input>
+      </ion-item>
+      <div class="error-message" *ngIf="nameError">
+        {{ nameError }}
+      </div>
+
+      <ion-item>
+        <ion-label position="floating">Correo Electrónico</ion-label>
+        <ion-input 
+          formControlName="email" 
+          type="email" 
+          required>
+        </ion-input>
+      </ion-item>
+      <div class="error-message" *ngIf="emailError">
+        {{ emailError }}
+      </div>
+
+      <div class="status-section">
+        <div class="status-label">Estado del Monitoreador</div>
+        <ion-item class="status-item">
+          <ion-label>{{ getStatusLabel() }}</ion-label>
+          <ion-toggle 
+            slot="start"
+            [checked]="monitorForm.get('status')?.value"
+            (ionChange)="toggleStatus()"
+            [color]="getStatusColor()">
+          </ion-toggle>
+        </ion-item>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <ion-button 
+        expand="block" 
+        type="submit" 
+        color="primary"
+        [disabled]="!monitorForm.valid">
+        Guardar
+      </ion-button>
+      <ion-button 
+        expand="block" 
+        color="medium" 
+        (click)="cancel()">
+        Cancelar
+      </ion-button>
+    </div>
+  </form>
+</div>

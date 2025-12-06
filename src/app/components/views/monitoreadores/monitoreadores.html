@@ -1,12 +1,13 @@
 <div class="monitoreadores-container">
   <div class="page-header">
-    <h1>Gestión de Monitoreadores</h1>
+    <h1>Gestión de Usuarios</h1>
+    <p>Administra los usuarios del sistema</p>
   </div>
 
   <div class="actions-bar">
-    <ion-button class="add-btn">
+    <ion-button class="add-btn" color="primary" (click)="openAddMonitorModal()">
       <ion-icon name="add" slot="start"></ion-icon>
-      Agregar Monitoreador
+      Agregar Usuario
     </ion-button>
     
     <ion-searchbar placeholder="Buscar monitoreadores..."></ion-searchbar>
@@ -18,26 +19,42 @@
         <div class="monitor-header">
           <div class="monitor-info">
             <h3>{{ monitor.name }}</h3>
-            <p class="location">{{ monitor.location }}</p>
+            <p class="email">
+              <ion-icon name="mail-outline"></ion-icon>
+              {{ monitor.email }}
+            </p>
           </div>
-          <div class="status-badge" [class.active]="monitor.status === 'Activo'">
-            {{ monitor.status }}
+          <div class="header-right">
+            <ion-badge [color]="getStatusColor(monitor.status)">
+              {{ getStatusLabel(monitor.status) }}
+            </ion-badge>
           </div>
         </div>
       </ion-card-header>
       
       <ion-card-content>
+        <div class="monitor-details">
+          <div class="detail-row">
+            <span class="detail-label">Rol:</span>
+            <span class="detail-value">{{ monitor.role?.name || 'Sin asignar' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Creado:</span>
+            <span class="detail-value">{{ formatDate(monitor.created_at) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">ID:</span>
+            <span class="detail-value">#{{ monitor.id }}</span>
+          </div>
+        </div>
+
         <div class="monitor-actions">
-          <ion-button fill="clear" size="small">
-            <ion-icon name="eye-outline"></ion-icon>
-            Ver Detalle
-          </ion-button>
-          <ion-button fill="clear" size="small">
-            <ion-icon name="create-outline"></ion-icon>
+          <ion-button fill="solid" size="small" color="secondary" (click)="editMonitor(monitor)">
+            <ion-icon name="create-outline" slot="start"></ion-icon>
             Editar
           </ion-button>
-          <ion-button fill="clear" size="small" color="danger">
-            <ion-icon name="trash-outline"></ion-icon>
+          <ion-button fill="solid" size="small" color="danger" (click)="deleteMonitor(monitor)">
+            <ion-icon name="trash-outline" slot="start"></ion-icon>
             Eliminar
           </ion-button>
         </div>
