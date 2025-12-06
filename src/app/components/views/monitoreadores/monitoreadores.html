@@ -1,20 +1,48 @@
 <div class="monitoreadores-container">
   <div class="page-header">
-    <h1>Gestión de Usuarios</h1>
-    <p>Administra los usuarios del sistema</p>
+    <div class="header-info">
+      <h1>Gestión de Usuarios</h1>
+      <p>Administra los usuarios del sistema</p>
+    </div>
+    
+    <div class="header-actions">
+      <ion-searchbar 
+        placeholder="Buscar usuarios..." 
+        (ionInput)="onSearchChange($event)">
+      </ion-searchbar>
+      <ion-button class="add-btn" color="primary" (click)="openAddMonitorModal()">
+        <ion-icon name="add" slot="start"></ion-icon>
+        Agregar Usuario
+      </ion-button>
+    </div>
   </div>
 
   <div class="actions-bar">
-    <ion-button class="add-btn" color="primary" (click)="openAddMonitorModal()">
-      <ion-icon name="add" slot="start"></ion-icon>
-      Agregar Usuario
-    </ion-button>
+    <div class="role-selector">
+      <ion-segment [value]="selectedRole" (ionChange)="onRoleChange($event)">
+        <ion-segment-button *ngFor="let role of roles" [value]="role">
+          <ion-label>{{ role }}</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+
+    <div class="deleted-toggle">
+      <ion-item>
+        <ion-label slot="start">Incluir Eliminados</ion-label>
+        <ion-toggle 
+          slot="end"
+          [checked]="includeDeleted"
+          (ionChange)="onDeletedToggle($event)"
+          color="primary">
+        </ion-toggle>
+      </ion-item>
+    </div>
+
     
-    <ion-searchbar placeholder="Buscar monitoreadores..."></ion-searchbar>
   </div>
 
   <div class="monitoreadores-grid">
-    <ion-card *ngFor="let monitor of monitoreadores" class="monitor-card">
+    <ion-card *ngFor="let monitor of filteredMonitoreadores" class="monitor-card">
       <ion-card-header>
         <div class="monitor-header">
           <div class="monitor-info">
@@ -46,6 +74,10 @@
             <span class="detail-label">ID:</span>
             <span class="detail-value">#{{ monitor.id }}</span>
           </div>
+          <div class="detail-row">
+            <span class="detail-label">Registro Eliminado:</span>
+            <span class="detail-value">{{ monitor.deleted_at ? formatDate(monitor.deleted_at) : 'No' }}</span>
+          </div>
         </div>
 
         <div class="monitor-actions">
@@ -53,7 +85,7 @@
             <ion-icon name="create-outline" slot="start"></ion-icon>
             Editar
           </ion-button>
-          <ion-button fill="solid" size="small" color="danger" (click)="deleteMonitor(monitor)">
+          <ion-button fill="solid" size="small" color="danger" (click)="deleteMonitor(monitor)" *ngIf="monitor && !monitor.deleted_at">
             <ion-icon name="trash-outline" slot="start"></ion-icon>
             Eliminar
           </ion-button>

@@ -14,8 +14,9 @@ export class UserService {
 
   constructor(private http: HttpClient) { }
 
-  getUsers(role: string): Observable<ApiResponse<User[]>> {
-    return this.http.get<ApiResponse<User[]>>(this.API_URL + `?role=${role}`);
+  getUsers(role: string | null, includeDeleted: boolean = false): Observable<ApiResponse<User[]>> {
+    const deletedParam = includeDeleted ? '&includeDeleted=true' : '';
+    return this.http.get<ApiResponse<User[]>>(this.API_URL + `?role=${role}${deletedParam}`);
   }
 
   showUser(id: string): Observable<any> {

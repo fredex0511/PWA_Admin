@@ -10,22 +10,44 @@
 .page-header {
   margin-bottom: 1.375rem; /* 22px */
   display: flex;
-  flex-direction: column;
-  gap: 0.375rem; /* 6px */
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
 }
 
-.page-header h1 {
+.header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem; /* 6px */
+  min-width: 250px;
+}
+
+.header-info h1 {
   color: #92BEE0;
   font-size: 2rem; /* 32px */
   font-weight: 800;
   margin: 0;
 }
 
-.page-header p {
+.header-info p {
   color: #cfe7f6;
   font-size: 0.9375rem; /* 15px */
   margin: 0;
   opacity: 0.9;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 300px;
+}
+
+.header-actions ion-searchbar {
+  flex: 1;
+  min-width: 200px;
 }
 
 .actions-bar {
@@ -34,6 +56,66 @@
   align-items: center;
   margin-bottom: 1.375rem; /* 22px */
   gap: 1.25rem; /* 20px */
+  flex-wrap: wrap;
+}
+
+.role-selector {
+  flex: 1;
+  min-width: 300px;
+}
+
+.role-selector ion-segment {
+  --background: rgba(146, 190, 224, 0.08);
+  border-radius: 0.625rem;
+  border: 1px solid rgba(146, 190, 224, 0.2);
+}
+
+.role-selector ion-segment-button {
+  --color: #92BEE0;
+  --color-checked: #000;
+  --background: transparent;
+  --background-checked: #92BEE0;
+  --indicator-color: #92BEE0;
+  border-radius: 0.5rem;
+  margin: 0.25rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.role-selector ion-segment-button ion-label {
+  color: inherit;
+}
+
+.deleted-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.deleted-toggle ion-item {
+  --background: rgba(146, 190, 224, 0.08);
+  --border-radius: 12px;
+  border: 1px solid rgba(146, 190, 224, 0.2);
+  padding: 0.5rem 1rem;
+  min-width: 220px;
+  --padding-start: 1.25rem;
+  --padding-end: 1.25rem;
+  --inner-padding-end: 0;
+}
+
+.deleted-toggle ion-item ion-label {
+  --color: #92BEE0;
+  color: #92BEE0;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-right: 2rem;
+}
+
+.deleted-toggle ion-toggle {
+  --track-background: rgba(146,190,224,0.2);
+  --track-background-checked: #92BEE0;
+  --handle-background: #fff;
+  --handle-background-checked: #000;
 }
 
 .add-btn {
@@ -50,9 +132,9 @@ ion-searchbar {
   --border-radius: 12px;
   --box-shadow: none;
   --color: #ffffff;
-  max-width: 480px;
-  width: 100%;
   --placeholder-color: rgba(207,231,246,0.6);
+  width: 100%;
+  padding: 0;
 }
 
 .monitoreadores-grid {

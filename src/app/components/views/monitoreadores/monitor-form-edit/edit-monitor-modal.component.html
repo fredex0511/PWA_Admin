@@ -34,13 +34,27 @@
         <ion-item class="status-item">
           <ion-label>{{ getStatusLabel() }}</ion-label>
           <ion-toggle 
-            slot="start"
+            slot="end"
             [checked]="monitorForm.get('status')?.value"
             (ionChange)="toggleStatus()"
             [color]="getStatusColor()">
           </ion-toggle>
         </ion-item>
       </div>
+      
+      <div class="status-section" *ngIf="monitor && monitor.deleted_at">
+        <div class="status-label">Registro Eliminado</div>
+        <ion-item class="deleted-item">
+          <ion-label>{{ getDeletedLabel() }}</ion-label>
+          <ion-toggle 
+            slot="end"
+            [checked]="monitorForm.get('deleted')?.value"
+            (ionChange)="toggleDeleted()"
+             color="warning">
+          </ion-toggle>
+        </ion-item>
+      </div>
+
     </div>
 
     <div class="form-actions">

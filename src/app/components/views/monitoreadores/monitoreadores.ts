@@ -23,8 +23,12 @@ export class Monitoreadores implements OnInit{
     private formBuilder: FormBuilder
   ) {}
   roles = ['Administrador', 'Monitoreador' , 'Usuario']
+  selectedRole: string = 'Monitoreador'
+  includeDeleted: boolean = false
+  searchTerm: string = ''
 
   monitoreadores: User[] = []
+  filteredMonitoreadores: User[] = []
   monitorForm: FormGroup = this.formBuilder.group({
     name: ['', [Validators.required, Validators.minLength(3)]],
     email: ['', [Validators.required, Validators.email]]
@@ -32,7 +36,7 @@ export class Monitoreadores implements OnInit{
 
   ngOnInit(): void {
     this.initializeForm();
-    this.getUsers();
+    this.loadUsersByRole(this.selectedRole);
   }
 
   private initializeForm(): void {
@@ -42,21 +46,57 @@ export class Monitoreadores implements OnInit{
     });
   }
 
-  private async getUsers() {
-    this.userService.getUsers('Monitoreador').subscribe({
+  loadUsersByRole(role: string): void {
+    this.selectedRole = role;
+    this.searchTerm = '';
+    
+    this.userService.getUsers(role, this.includeDeleted).subscribe({
       next: async (resp) => {
         if (resp.data) {
           console.log(resp)
-          this.monitoreadores = resp.data
+          this.monitoreadores = resp.data;
+          this.filteredMonitoreadores = resp.data;
         } else {
-          this.monitoreadores = []
+          this.monitoreadores = [];
+          this.filteredMonitoreadores = [];
         }
       },
       error: async (err) => {
-        console.error('Error loading monitoreadores:', err);
+        console.error('Error loading usuarios:', err);
       }
     })
   }
+
+  onSearchChange(event: any): void {
+    this.searchTerm = event.detail.value.toLowerCase();
+    this.filterUsers();
+  }
+
+  filterUsers(): void {
+    if (!this.searchTerm.trim()) {
+      this.filteredMonitoreadores = this.monitoreadores;
+      return;
+    }
+
+    this.filteredMonitoreadores = this.monitoreadores.filter(user => {
+      const nameMatch = user.name.toLowerCase().includes(this.searchTerm);
+      const emailMatch = user.email.toLowerCase().includes(this.searchTerm);
+      return nameMatch || emailMatch;
+    });
+  }
+
+  onRoleChange(event: any): void {
+    const role = event.detail.value;
+    if (role) {
+      this.loadUsersByRole(role);
+    }
+  }
+
+  onDeletedToggle(event: any): void {
+    this.includeDeleted = event.detail.checked;
+    this.loadUsersByRole(this.selectedRole);
+  }
+
 
   getStatusLabel(status: number | boolean): string {
     return status === 1 || status === true ? 'Activo' : 'Inactivo';
@@ -97,18 +137,18 @@ export class Monitoreadores implements OnInit{
       email: data.email,
       password: data.password,
       password_con: data.password,
-      role: 'Monitoreador',
+      role: this.selectedRole,
       active: true
     };
 
     this.userService.createUser(newMonitor).subscribe({
       next: (resp) => {
-        this.showSuccessAlert('Monitoreador creado exitosamente');
-        this.getUsers();
+        this.showSuccessAlert('Usuario creado exitosamente');
+        this.loadUsersByRole(this.selectedRole);
       },
       error: (err) => {
-        console.error('Error creando monitoreador:', err);
-        this.showErrorAlert('Error al crear el monitoreador');
+        console.error('Error creando usuario:', err);
+        this.showErrorAlert('Error al crear el usuario');
       }
     });
   }
@@ -153,24 +193,25 @@ export class Monitoreadores implements OnInit{
     const updateData = {
       name: data.name,
       email: data.email,
-      status: data.status ? 1 : 0
+      status: data.status ? 1 : 0,
+      deleted: data.deleted ?? false
     };
 
     this.userService.updateUser(data.id, updateData).subscribe({
       next: (resp) => {
-        this.showSuccessAlert('Monitoreador actualizado exitosamente');
-        this.getUsers();
+        this.showSuccessAlert('Usuario actualizado exitosamente');
+        this.loadUsersByRole(this.selectedRole);
       },
       error: (err) => {
-        console.error('Error actualizando monitoreador:', err);
-        this.showErrorAlert('Error al actualizar el monitoreador');
+        console.error('Error actualizando usuario:', err);
+        this.showErrorAlert('Error al actualizar el usuario');
       }
     });
   }
 
   async deleteMonitor(monitor: User) {
     const alert = await this.alertController.create({
-      header: 'Eliminar Monitoreador',
+      header: 'Eliminar Usuario',
       message: `¿Está seguro de que desea eliminar a ${monitor.name}?`,
       buttons: [
         {
@@ -183,12 +224,12 @@ export class Monitoreadores implements OnInit{
           handler: () => {
             this.userService.deleteUser(String(monitor.id)).subscribe({
               next: (resp) => {
-                this.showSuccessAlert('Monitoreador eliminado exitosamente');
-                this.getUsers();
+                this.showSuccessAlert('Usuario eliminado exitosamente');
+                this.loadUsersByRole(this.selectedRole);
               },
               error: (err) => {
-                console.error('Error eliminando monitoreador:', err);
-                this.showErrorAlert('Error al eliminar el monitoreador');
+                console.error('Error eliminando usuario:', err);
+                this.showErrorAlert('Error al eliminar el usuario');
               }
             });
           }

@@ -1,13 +1,13 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonicModule, ModalController } from '@ionic/angular';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgIf } from '@angular/common';
 import { User } from 'src/app/interfaces/user';
 
 @Component({
   selector: 'app-edit-monitor-modal',
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
+  imports: [IonicModule, CommonModule, NgIf, ReactiveFormsModule],
   templateUrl: './edit-monitor-modal.component.html',
   styleUrl: './edit-monitor-modal.component.css'
 })
@@ -22,7 +22,8 @@ export class EditMonitorModalComponent implements OnInit {
     this.monitorForm = this.formBuilder.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
-      status: [true]
+      status: [true],
+      deleted: [false]
     });
   }
 
@@ -31,7 +32,8 @@ export class EditMonitorModalComponent implements OnInit {
       this.monitorForm.patchValue({
         name: this.monitor.name,
         email: this.monitor.email,
-        status: Boolean(this.monitor.status)
+        status: Boolean(this.monitor.status),
+        deleted: Boolean(this.monitor.deleted_at)
       });
     }
   }
@@ -81,6 +83,13 @@ export class EditMonitorModalComponent implements OnInit {
     }
   }
 
+  toggleDeleted(): void {
+    const deletedControl = this.monitorForm.get('deleted');
+    if (deletedControl) {
+      deletedControl.setValue(!deletedControl.value);
+    }
+  }
+
   getStatusLabel(): string {
     const status = this.monitorForm.get('status')?.value;
     return status ? 'Activo' : 'Inactivo';
@@ -89,5 +98,19 @@ export class EditMonitorModalComponent implements OnInit {
   getStatusColor(): string {
     const status = this.monitorForm.get('status')?.value;
     return status ? 'success' : 'medium';
+  }
+
+  getDeletedLabel(): string {
+    const deleted = this.monitorForm.get('deleted')?.value;
+    return deleted ? 'Marcado como eliminado' : 'Activo';
+  }
+
+  formatDeletedDate(date?: string | null): string {
+    if (!date) return 'No eliminado';
+    return new Date(date).toLocaleDateString('es-MX', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   }
 }
