@@ -47,7 +47,7 @@ export class Login implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.isMobile = this.platformDetector.isMobile();
-
+    this.loadRecaptchaScript()
     // Verificar si ya está instalada
     const isInstalled =
       localStorage.getItem('walksafe_pwa_installed') === 'true';

@@ -6,6 +6,8 @@ import { RouteRun } from 'src/app/interfaces/route-run';
 import { SocketService } from 'src/app/services/socket/socket';
 import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
+import { UserService } from 'src/app/services/users';
+import { User } from 'src/app/interfaces/user';
 // Interfaces
 interface RoutePosition {
   x: number;
@@ -58,7 +60,7 @@ export class Caminos implements OnInit, OnDestroy {
   private directionsThrottleMs: number = 5000; // ms
   // Track last geocode time per route to avoid spamming API
   private lastGeocodeAt: WeakMap<ActiveRoute, number> = new WeakMap();
-
+  private user:User | null =null
   //socket 
   private audioContext: AudioContext | null = null;
   private scheduledTime = 0;
@@ -73,12 +75,17 @@ export class Caminos implements OnInit, OnDestroy {
   listenPending = false;
   private remoteTarget: number | null = null;
 
+  // Emergency contacts
+  showContactsPanel = false;
+  userContacts: any[] = [];
+
   //
   constructor(
     private runRouteService: RunroutesService,
     private socketService: SocketService,
     private alertController: AlertController,
     private toastController: ToastController,
+    private userService:UserService
   ) { }
 
   ngOnInit() {
@@ -202,6 +209,26 @@ export class Caminos implements OnInit, OnDestroy {
 
   // Route selection
   selectRoute(route: ActiveRoute): void {
+    this.userService.showUser(route.user_id).subscribe({
+      next: async(resp) => {
+        this.user = resp.data;
+        this.userContacts = resp.data?.contacts || [];
+        this.showContactsPanel = true;
+      },
+      error: async (err) => {
+        console.error('Error loading user:', err);
+        let message = 'No se pudieron cargar los contactos del usuario';
+        if (err.error?.msg) {
+          message = err.error.msg;
+        }
+        const alert = await this.alertController.create({
+          header: 'Error',
+          message,
+          buttons: ['OK'],
+        });
+        await alert.present();
+      }
+    });
     this.targetUserId = route.user_id;
     console.log('route')
     console.log(route)
@@ -301,6 +328,33 @@ export class Caminos implements OnInit, OnDestroy {
 
   toggleFullscreen() {
     this.isMapFullscreen = !this.isMapFullscreen;
+  }
+
+  toggleContactsPanel() {
+    this.showContactsPanel = !this.showContactsPanel;
+  }
+
+  callContact(contact: any, event: Event) {
+    event.stopPropagation();
+    if (contact.phone) {
+      window.location.href = `tel:${contact.phone}`;
+    }
+  }
+
+  sendWhatsApp(contact: any, event: Event) {
+    event.stopPropagation();
+    if (contact.phone) {
+      const message = `Hola ${contact.name}, necesito ayuda de emergencia`;
+      const url = `https://wa.me/52${contact.phone}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+    }
+  }
+
+  sendEmail(contact: any, event: Event) {
+    event.stopPropagation();
+    if (contact.email) {
+      window.location.href = `mailto:${contact.email}?subject=Emergencia&body=Necesito ayuda`;
+    }
   }
 
   // Google Maps helpers

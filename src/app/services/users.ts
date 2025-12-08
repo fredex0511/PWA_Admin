@@ -19,8 +19,8 @@ export class UserService {
     return this.http.get<ApiResponse<User[]>>(this.API_URL + `?role=${role}${deletedParam}`);
   }
 
-  showUser(id: string): Observable<any> {
-    return this.http.get(this.API_URL + id);
+  showUser(id: number): Observable<ApiResponse<User>> {
+    return this.http.get<ApiResponse<User>>(this.API_URL + id);
   }
 
   updateUser(id: string, data: any): Observable<any> {

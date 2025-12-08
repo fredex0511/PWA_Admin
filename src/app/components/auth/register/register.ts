@@ -43,6 +43,7 @@ export class Register implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.loadRecaptchaScript()
     this.isMobile = this.platformDetector.isMobile();
     // isMobile determined
   }
