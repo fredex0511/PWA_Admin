@@ -3,11 +3,12 @@ import { Login } from './components/auth/login/login';
 import { Register } from './components/auth/register/register';
 import { DashboardComponent } from './components/layouts/dashboard/dashboard.component';
 import { DashboardMobileComponent } from './components/layouts/dashboard-mobile/dashboard-mobile.component';
+import { roleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'login',
+    redirectTo: 'dashboard-mobile',
     pathMatch: 'full',
   },
   {
@@ -21,6 +22,8 @@ export const routes: Routes = [
   {
     path: 'dashboard-mobile',
     component: DashboardMobileComponent,
+    canActivate: [roleGuard],
+    data: { roles: [3] },
     children: [
       {
         path: '',
@@ -45,6 +48,8 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     component: DashboardComponent,
+    canActivate: [roleGuard],
+    data: { roles: [1, 2] },
     children: [
       {
         path: '',
