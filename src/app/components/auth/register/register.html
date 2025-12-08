@@ -19,7 +19,8 @@
 			<p class="brand-subtitle">Regístrate para empezar a proteger tus rutas</p>
 		</div>
 
-		<form (ngSubmit)="onSubmit()" #registerForm="ngForm" class="login-form" autocomplete="off" novalidate>
+		<!-- Paso 1: Formulario de Registro -->
+		<form *ngIf="!requiresCode" (ngSubmit)="onSubmit()" #registerForm="ngForm" class="login-form" autocomplete="off" novalidate>
 			<div class="input-group">
 				<div class="input-item">
 					<div class="input-icon">
@@ -103,7 +104,43 @@
 			</div>
 		</form>
 
-		<div class="forgot-link">
+		<!-- Paso 2: Verificación de Código -->
+		<form *ngIf="requiresCode" (ngSubmit)="verifyRegisterCode()" class="login-form" novalidate>
+			<div class="verification-header">
+				<h2>Verificación de Dos Factores</h2>
+				<p>Se envió un código a<br><strong>{{ currentEmail }}</strong></p>
+			</div>
+
+			<div class="input-group">
+				<div class="input-item">
+					<div class="input-icon">
+						<ion-icon name="key-outline"></ion-icon>
+					</div>
+					<input
+						type="text"
+						name="code"
+						inputmode="numeric"
+						maxlength="6"
+						aria-label="Código de verificación"
+						[(ngModel)]="verificationCode"
+						placeholder="Ingresa el código (6 dígitos)" />
+				</div>
+			</div>
+
+			<div class="actions">
+				<button type="submit" class="btn-primary">
+					<span class="btn-text">Verificar</span>
+					<div class="btn-glow"></div>
+					<ion-icon name="checkmark-outline" class="btn-icon"></ion-icon>
+				</button>
+				<button type="button" class="btn-secondary" (click)="cancelVerification()">
+					<span class="btn-text">Volver</span>
+					<ion-icon name="arrow-back-outline" class="btn-icon"></ion-icon>
+				</button>
+			</div>
+		</form>
+
+		<div class="forgot-link" *ngIf="!requiresCode">
 			<p>¿Ya tienes una cuenta? <a href="#" (click)="goToLogin(); $event.preventDefault()">Inicia sesión</a></p>
 		</div>
 

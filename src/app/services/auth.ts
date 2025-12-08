@@ -16,13 +16,18 @@ export class AuthService {
 
   constructor(private http: HttpClient) { }
 
-  login(data:LoginRequest): Observable<ApiResponse<LoginResponse>> {
-    return this.http.post<ApiResponse<LoginResponse>>(`${this.API_URL}login`, data);
+  login(data:LoginRequest): Observable<ApiResponse<{ email: string, requiresCode: boolean }>> {
+    return this.http.post<ApiResponse<{ email: string, requiresCode: boolean }>>(`${this.API_URL}login`, data);
   }
 
-  register(data:RegisterRequest) : Observable<ApiResponse<RegisterResponse>> {
-    return this.http.post<ApiResponse<RegisterResponse>>(`${this.API_URL}register`, data);
+  register(data:RegisterRequest) : Observable<ApiResponse< { email: string, requiresCode: boolean }>> {
+    return this.http.post<ApiResponse<{ email: string, requiresCode: boolean }>>(`${this.API_URL}register`, data);
   }
+
+  verifyCode(data:{email:string,code:string}) : Observable<ApiResponse<LoginResponse>> {
+    return this.http.post<ApiResponse<LoginResponse>>(`${this.API_URL}verify-code`, data);
+  }
+
 
   logout(): Observable<any> {
     return this.http.post<any>(`${this.API_URL}logout`, {});

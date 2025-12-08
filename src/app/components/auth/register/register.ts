@@ -21,6 +21,11 @@ export class Register implements OnInit {
   } = { name: '', email: '', password: '', confirmPassword: '' };
   isMobile: boolean = false;
 
+  // 2FA
+  requiresCode: boolean = false;
+  verificationCode: string = '';
+  currentEmail: string = '';
+
   constructor(
     private router: Router,
     private platformDetector: PlatformDetectorService,
@@ -56,45 +61,22 @@ export class Register implements OnInit {
     this.authService.register(data).subscribe({
       next: async (resp) => {
         try {
-          this.clearForm();
-          localStorage.setItem('walksafe_user_logged_in', 'true');
-          localStorage.setItem(
-            'walksafe_user_email',
-            resp.data!.user?.email || this.model.email
-          );
-          localStorage.setItem('walksafe_token', resp.data!.token?.token || '');
-          localStorage.setItem(
-            'walksafe_token_type',
-            resp.data!.token?.type || ''
-          );
-          localStorage.setItem(
-            'walksafe_token_expires_at',
-            resp.data!.token?.expires_at || ''
-          );
-          localStorage.setItem(
-            'walksafe_user',
-            JSON.stringify(resp.data!.user || {})
-          );
-
-          await this.presentAlert(`Cuenta creada para ${data.email}`);
-          if (this.isMobile && resp.data!.user?.role_id === 3) {
+          // Si requiere código de verificación
+          if (resp.data?.requiresCode) {
+            this.requiresCode = true;
+            this.currentEmail = data.email;
+            this.verificationCode = '';
             const toast = await this.toastController.create({
-              message: 'Para mejor experiencia instala la app de WalkSafe',
-              duration: 4000,
+              message: `📧 Se envió un código a ${data.email}`,
+              duration: 3000,
               position: 'bottom',
-              color: 'primary',
+              color: 'success',
             });
             await toast.present();
-            this.router.navigate(['/dashboard-mobile'], { replaceUrl: true });
-          } else {
-            const toastError = await this.toastController.create({
-              message: 'Ingresa desde el movil a la app de WalkSafe',
-              duration: 2000,
-              position: 'top',
-              color: 'danger',
-            });
-            toastError.present();
+            return;
           }
+
+          this.clearForm();
         } catch (e) {
           // Error handling omitted from logs
         }
@@ -144,6 +126,88 @@ export class Register implements OnInit {
       // Navigation failure ignored
     });
   }
+
+  async verifyRegisterCode() {
+    if (!this.verificationCode || this.verificationCode.trim().length === 0) {
+      const alert = await this.alertController.create({
+        header: 'Código requerido',
+        message: 'Por favor ingresa el código de verificación',
+        buttons: ['OK'],
+      });
+      await alert.present();
+      return;
+    }
+
+    this.authService.verifyCode({
+      email: this.currentEmail,
+      code: this.verificationCode
+    }).subscribe({
+      next: async (resp) => {
+        try {
+          this.clearForm();
+          this.requiresCode = false;
+          this.verificationCode = '';
+          
+          localStorage.setItem('walksafe_user_logged_in', 'true');
+          localStorage.setItem(
+            'walksafe_user_email',
+            resp.data!.user?.email || this.currentEmail
+          );
+          localStorage.setItem('walksafe_token', resp.data!.token?.token || '');
+          localStorage.setItem('walksafe_token_type', resp.data!.token?.type || '');
+          localStorage.setItem(
+            'walksafe_token_expires_at',
+            resp.data!.token?.expires_at || ''
+          );
+          localStorage.setItem(
+            'walksafe_user',
+            JSON.stringify(resp.data!.user || {})
+          );
+          
+          if (this.isMobile && resp.data!.user?.role_id === 3) {
+            const toast = await this.toastController.create({
+              message: 'Para mejor experiencia instala la app de WalkSafe',
+              duration: 4000,
+              position: 'bottom',
+              color: 'primary',
+            });
+            await toast.present();
+            this.router.navigate(['/dashboard-mobile'], { replaceUrl: true });
+          } else {
+            const toastError = await this.toastController.create({
+              message: 'Ingresa desde el movil a la app de WalkSafe',
+              duration: 2000,
+              position: 'top',
+              color: 'danger',
+            });
+            toastError.present();
+          }
+        } catch (e) {
+          console.error('Error handling verification response', e);
+        }
+      },
+      error: async (err) => {
+        let message = 'Código inválido';
+        if (err.error?.msg) {
+          message = err.error.msg;
+        }
+        const alert = await this.alertController.create({
+          header: 'Error de verificación',
+          message,
+          buttons: ['OK'],
+        });
+        await alert.present();
+      },
+    });
+  }
+
+  cancelVerification() {
+    this.requiresCode = false;
+    this.verificationCode = '';
+    this.currentEmail = '';
+    this.model = { name: '', email: '', password: '', confirmPassword: '' };
+  }
+
   private clearForm() {
     this.model = { name: '', email: '', password: '', confirmPassword: '' };
   }

@@ -20,6 +20,11 @@ export class Login implements OnInit, OnDestroy {
   showBanner: boolean = false;
   private deferredPrompt: any = null;
 
+  // 2FA
+  requiresCode: boolean = false;
+  verificationCode: string = '';
+  currentEmail: string = '';
+
   private beforeInstallPromptListener: (() => void) | null = null;
   private appInstalledListener: (() => void) | null = null;
 
@@ -120,44 +125,23 @@ export class Login implements OnInit, OnDestroy {
       .subscribe({
         next: async (resp) => {
           try {
-            this.clearForm();
-            localStorage.setItem('walksafe_user_logged_in', 'true');
-            localStorage.setItem(
-              'walksafe_user_email',
-              resp.data!.user?.email || data.email
-            );
-            localStorage.setItem('walksafe_token', resp.data!.token?.token || '');
-            localStorage.setItem('walksafe_token_type', resp.data!.token?.type || '');
-            localStorage.setItem(
-              'walksafe_token_expires_at',
-              resp.data!.token?.expires_at || ''
-            );
-            localStorage.setItem(
-              'walksafe_user',
-              JSON.stringify(resp.data!.user || {})
-            );
-            if (
-              (resp.data!.user.role_id === 2 || resp.data!.user.role_id === 1) &&
-              !this.isMobile
-            ) {
-               this.router.navigate(['/dashboard'], { replaceUrl: true });
-            } else if (
-              resp.data!.user.role_id !== 1 &&
-              resp.data!.user.role_id !== 2 &&
-              this.isMobile
-            ) {
-              const tfcm = localStorage.getItem('fcm_token') || ''
-              this.firebasePushService.sendTokenToBackend(tfcm)
-              this.router.navigate(['/dashboard-mobile'], { replaceUrl: true });
-            } else {
-              const msg = (!this.isMobile && resp.data!.user.role_id === 3) ? 'Para acceder a la app de WalkSafe ingresa desde el movil' : 'No es posible acceder a la app de WalkSafe';
-              const alert = await this.alertController.create({
-                header: 'Error de autenticación',
-                message: 'Error de autenticación',
-                buttons: ['OK'],
+            // Si requiere código de verificación
+            if (resp.data?.requiresCode) {
+              this.requiresCode = true;
+              this.currentEmail = data.email;
+              this.verificationCode = '';
+              const toast = await this.toastController.create({
+                message: `📧 Se envió un código a ${data.email}`,
+                duration: 3000,
+                position: 'bottom',
+                color: 'success',
               });
-              await alert.present();
+              await toast.present();
+              return;
             }
+
+            this.clearForm();
+           
           } catch (e) {
             console.error('Error handling login response', e);
           }
@@ -175,6 +159,90 @@ export class Login implements OnInit, OnDestroy {
           await alert.present();
         },
       });
+  }
+
+  async verifyLoginCode() {
+    if (!this.verificationCode || this.verificationCode.trim().length === 0) {
+      const alert = await this.alertController.create({
+        header: 'Código requerido',
+        message: 'Por favor ingresa el código de verificación',
+        buttons: ['OK'],
+      });
+      await alert.present();
+      return;
+    }
+
+    this.authService.verifyCode({
+      email: this.currentEmail,
+      code: this.verificationCode
+    }).subscribe({
+      next: async (resp) => {
+        try {
+          this.clearForm();
+          this.requiresCode = false;
+          this.verificationCode = '';
+          
+          localStorage.setItem('walksafe_user_logged_in', 'true');
+          localStorage.setItem(
+            'walksafe_user_email',
+            resp.data!.user?.email || this.currentEmail
+          );
+          localStorage.setItem('walksafe_token', resp.data!.token?.token || '');
+          localStorage.setItem('walksafe_token_type', resp.data!.token?.type || '');
+          localStorage.setItem(
+            'walksafe_token_expires_at',
+            resp.data!.token?.expires_at || ''
+          );
+          localStorage.setItem(
+            'walksafe_user',
+            JSON.stringify(resp.data!.user || {})
+          );
+          
+          if (
+            (resp.data!.user.role_id === 2 || resp.data!.user.role_id === 1) &&
+            !this.isMobile
+          ) {
+             this.router.navigate(['/dashboard'], { replaceUrl: true });
+          } else if (
+            resp.data!.user.role_id !== 1 &&
+            resp.data!.user.role_id !== 2 &&
+            this.isMobile
+          ) {
+            const tfcm = localStorage.getItem('fcm_token') || ''
+            this.firebasePushService.sendTokenToBackend(tfcm)
+            this.router.navigate(['/dashboard-mobile'], { replaceUrl: true });
+          } else {
+            const alert = await this.alertController.create({
+              header: 'Error de autenticación',
+              message: 'Error de autenticación',
+              buttons: ['OK'],
+            });
+            await alert.present();
+          }
+        } catch (e) {
+          console.error('Error handling verification response', e);
+        }
+      },
+      error: async (err) => {
+        let message = 'Código inválido';
+        if (err.error?.msg) {
+          message = err.error.msg;
+        }
+        const alert = await this.alertController.create({
+          header: 'Error de verificación',
+          message,
+          buttons: ['OK'],
+        });
+        await alert.present();
+      },
+    });
+  }
+
+  cancelVerification() {
+    this.requiresCode = false;
+    this.verificationCode = '';
+    this.currentEmail = '';
+    this.model = { email: '', password: '' };
   }
 
   async onForgot() {
