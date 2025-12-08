@@ -1,8 +1,8 @@
 export const environment = {
   production: true,
-  apiAUTH: 'https://vkf1xfcn-3333.usw3.devtunnels.ms/api/v1/auth/',
-  api: 'https://vkf1xfcn-3333.usw3.devtunnels.ms/api/v1/',
-  socket: 'https://vkf1xfcn-3333.usw3.devtunnels.ms',
+  apiAUTH: 'https://jesusarandarodriguez.site/api/v1/auth/',
+  api: 'https://jesusarandarodriguez.site/api/v1/',
+  socket: 'https://jesusarandarodriguez.site',
   recaptchaSiteKey: '6Lc56SQsAAAAAB8IoHtJSJHj0aCcP1wnR2ER98tq',
   firebaseConfig: {
     apiKey: "AIzaSyB_J6iu9ne0LJyUyx1T2H3lOVmya4W1sso",
