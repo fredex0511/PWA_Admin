@@ -99,6 +99,11 @@ export class ContactsMobileComponent  implements OnInit {
   }
 
   saveNewContact() {
+    if (!navigator.onLine) {
+      this.showOfflineAlert('No puedes crear un contacto sin conexión a internet.');
+      return;
+    }
+
     if (this.newContact.name && this.newContact.direction) {
       this.contactsService.createContact(this.newContact).subscribe({
         next: async (resp) => {
@@ -129,6 +134,12 @@ export class ContactsMobileComponent  implements OnInit {
   }
 
   updateContact(updatedContact: any) {
+    // Verificar si hay conexión a internet
+    if (!navigator.onLine) {
+      this.showOfflineAlert('No puedes actualizar un contacto sin conexión a internet.');
+      return;
+    }
+
     if (updatedContact.name && updatedContact.direction) {
       this.contactsService.updateContact(updatedContact.id, updatedContact).subscribe({
         next: async (resp) => {
@@ -163,6 +174,12 @@ export class ContactsMobileComponent  implements OnInit {
 
   async deleteContact() {
     if (!this.selectedContact) return;
+
+    // Verificar si hay conexión a internet
+    if (!navigator.onLine) {
+      this.showOfflineAlert('No puedes eliminar un contacto sin conexión a internet.');
+      return;
+    }
 
     const confirmAlert = await this.alertController.create({
       header: 'Confirmar Eliminación',
@@ -236,6 +253,15 @@ export class ContactsMobileComponent  implements OnInit {
       this.selectedContact = { ...this.selectedContact };
     }
     this.directionSuggestions = [];
+  }
+
+  private async showOfflineAlert(message: string) {
+    const alert = await this.alertController.create({
+      header: 'Sin conexión',
+      message: message + ' Por favor, verifica tu conexión.',
+      buttons: ['OK']
+    });
+    await alert.present();
   }
 
 }

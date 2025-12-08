@@ -1,0 +1,109 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/favicon.ico",
+          "/index.html",
+          "/*.css",
+          "/*.js"
+        ]
+      }
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/assets/**",
+          "/manifest.webmanifest",
+          "/*.png",
+          "/*.svg",
+          "/*.webp",
+          "/*.jpg",
+          "/*.woff2"
+        ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "routes-api",
+      "urls": [
+        "https://vkf1xfcn-3333.usw3.devtunnels.ms/api/v1/routes/**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 60,
+        "maxAge": "7d",
+        "timeout": "8s"
+      }
+    },
+    {
+      "name": "contacts-api",
+      "urls": [
+        "https://vkf1xfcn-3333.usw3.devtunnels.ms/api/v1/contacts/**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 60,
+        "maxAge": "7d",
+        "timeout": "8s"
+      }
+    },
+    {
+      "name": "incidents-api",
+      "urls": [
+        "https://vkf1xfcn-3333.usw3.devtunnels.ms/api/v1/incidents/**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 60,
+        "maxAge": "7d",
+        "timeout": "8s"
+      }
+    },
+    {
+      "name": "evidences-api",
+      "urls": [
+        "https://vkf1xfcn-3333.usw3.devtunnels.ms/api/v1/evidences/**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 100,
+        "maxAge": "30d",
+        "timeout": "10s"
+      }
+    },
+    {
+      "name": "runroutes-api",
+      "urls": [
+        "https://vkf1xfcn-3333.usw3.devtunnels.ms/api/v1/runroutes/**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 60,
+        "maxAge": "7d",
+        "timeout": "8s"
+      }
+    },
+    {
+      "name": "incident-types-api",
+      "urls": [
+        "https://vkf1xfcn-3333.usw3.devtunnels.ms/api/v1/incidenttype/**"
+      ],
+      "cacheConfig": {
+        "strategy": "performance",
+        "maxSize": 20,
+        "maxAge": "30d",
+        "timeout": "5s"
+      }
+    }
+  ]
+}

@@ -295,6 +295,17 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
   }
 
   async confirmStartPath(path: UserPath) {
+    // Verificar si hay conexión a internet
+    if (!navigator.onLine) {
+      const offlineAlert = await this.alertController.create({
+        header: 'Sin conexión',
+        message: 'No puedes iniciar una ruta sin conexión a internet. Por favor, verifica tu conexión.',
+        buttons: ['OK']
+      });
+      await offlineAlert.present();
+      return;
+    }
+
     const alert = await this.alertController.create({
       header: 'Iniciar camino',
       message: `¿Iniciar el camino "${path.name}"?`,
@@ -375,6 +386,12 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
   }
 
   saveNewPath() {
+    // Verificar si hay conexión a internet
+    if (!navigator.onLine) {
+      this.showOfflineAlert('No puedes crear una ruta sin conexión a internet.');
+      return;
+    }
+
     if (this.newPath.name && this.newPath.origin && this.newPath.destination) {
        this.routeService
       .createRoute(this.newPath)
@@ -954,6 +971,15 @@ this.runRouteService
       console.error('[Geocoding] Error:', error);
       return `${lat}, ${lng}`;
     }
+  }
+
+  private async showOfflineAlert(message: string) {
+    const alert = await this.alertController.create({
+      header: 'Sin conexión',
+      message: message + ' Por favor, verifica tu conexión.',
+      buttons: ['OK']
+    });
+    await alert.present();
   }
 
 }

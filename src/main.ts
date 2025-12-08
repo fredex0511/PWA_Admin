@@ -8,6 +8,8 @@ import { AppComponent } from './app/app.component';
 import { HttpClientModule } from '@angular/common/http';
 import { authInterceptor } from './app/interceptors/auth-interceptor';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideServiceWorker } from '@angular/service-worker';
+import { environment } from './environments/environment';
 
 registerIonicons();
 bootstrapApplication(AppComponent, {
@@ -24,5 +26,9 @@ bootstrapApplication(AppComponent, {
     ),
     provideRouter(routes, withPreloading(PreloadAllModules)),
     importProvidersFrom(HttpClientModule),
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: environment.production,
+      registrationStrategy: 'registerWhenStable:30000'
+    }),
   ],
 });
