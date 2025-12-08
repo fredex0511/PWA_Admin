@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { PlatformDetectorService } from '../../../services/platform-detector';
 import { AuthService } from 'src/app/services/auth';
 import { FirebasePushService } from 'src/app/services/firebase-push.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -24,6 +25,8 @@ export class Login implements OnInit, OnDestroy {
   requiresCode: boolean = false;
   verificationCode: string = '';
   currentEmail: string = '';
+  private recaptchaLoaded = false;
+  private recaptchaLoadingPromise: Promise<void> | null = null;
 
   private beforeInstallPromptListener: (() => void) | null = null;
   private appInstalledListener: (() => void) | null = null;
@@ -119,9 +122,23 @@ export class Login implements OnInit, OnDestroy {
       return;
     }
 
+    // Obtener token de reCAPTCHA v3
+    let recaptchaToken = '';
+    try {
+      recaptchaToken = await this.getRecaptchaToken('login');
+    } catch (error) {
+      const alert = await this.alertController.create({
+        header: 'reCAPTCHA',
+        message: 'No se pudo validar el reCAPTCHA. Intenta de nuevo.',
+        buttons: ['OK'],
+      });
+      await alert.present();
+      return;
+    }
+
     // Llamar al servicio de autenticación
     this.authService
-      .login(data)
+      .login({ ...data, recaptchaToken })
       .subscribe({
         next: async (resp) => {
           try {
@@ -172,9 +189,23 @@ export class Login implements OnInit, OnDestroy {
       return;
     }
 
+    let recaptchaToken = '';
+    try {
+      recaptchaToken = await this.getRecaptchaToken('verify_login_code');
+    } catch (error) {
+      const alert = await this.alertController.create({
+        header: 'reCAPTCHA',
+        message: 'No se pudo validar el reCAPTCHA. Intenta de nuevo.',
+        buttons: ['OK'],
+      });
+      await alert.present();
+      return;
+    }
+
     this.authService.verifyCode({
       email: this.currentEmail,
-      code: this.verificationCode
+      code: this.verificationCode,
+      recaptchaToken
     }).subscribe({
       next: async (resp) => {
         try {
@@ -243,6 +274,35 @@ export class Login implements OnInit, OnDestroy {
     this.verificationCode = '';
     this.currentEmail = '';
     this.model = { email: '', password: '' };
+  }
+
+  private async loadRecaptchaScript(): Promise<void> {
+    if (this.recaptchaLoaded) return;
+    if (this.recaptchaLoadingPromise) return this.recaptchaLoadingPromise;
+
+    this.recaptchaLoadingPromise = new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = `https://www.google.com/recaptcha/api.js?render=${environment.recaptchaSiteKey}`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        this.recaptchaLoaded = true;
+        resolve();
+      };
+      script.onerror = (err) => reject(err);
+      document.head.appendChild(script);
+    });
+
+    return this.recaptchaLoadingPromise;
+  }
+
+  private async getRecaptchaToken(action: string): Promise<string> {
+    await this.loadRecaptchaScript();
+    const grecaptcha = (window as any).grecaptcha;
+    if (!grecaptcha || !environment.recaptchaSiteKey) {
+      throw new Error('reCAPTCHA no disponible');
+    }
+    return grecaptcha.execute(environment.recaptchaSiteKey, { action });
   }
 
   async onForgot() {

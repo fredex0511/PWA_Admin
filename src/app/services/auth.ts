@@ -16,15 +16,15 @@ export class AuthService {
 
   constructor(private http: HttpClient) { }
 
-  login(data:LoginRequest): Observable<ApiResponse<{ email: string, requiresCode: boolean }>> {
+  login(data: LoginRequest): Observable<ApiResponse<{ email: string, requiresCode: boolean }>> {
     return this.http.post<ApiResponse<{ email: string, requiresCode: boolean }>>(`${this.API_URL}login`, data);
   }
 
-  register(data:RegisterRequest) : Observable<ApiResponse< { email: string, requiresCode: boolean }>> {
+  register(data: RegisterRequest) : Observable<ApiResponse< { email: string, requiresCode: boolean }>> {
     return this.http.post<ApiResponse<{ email: string, requiresCode: boolean }>>(`${this.API_URL}register`, data);
   }
 
-  verifyCode(data:{email:string,code:string}) : Observable<ApiResponse<LoginResponse>> {
+  verifyCode(data: { email: string, code: string, recaptchaToken?: string }) : Observable<ApiResponse<LoginResponse>> {
     return this.http.post<ApiResponse<LoginResponse>>(`${this.API_URL}verify-code`, data);
   }
 

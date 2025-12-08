@@ -3,6 +3,7 @@ export const environment = {
   apiAUTH: 'https://vkf1xfcn-3333.usw3.devtunnels.ms/api/v1/auth/',
   api: 'https://vkf1xfcn-3333.usw3.devtunnels.ms/api/v1/',
   socket: 'https://vkf1xfcn-3333.usw3.devtunnels.ms',
+  recaptchaSiteKey: '6Lc56SQsAAAAAB8IoHtJSJHj0aCcP1wnR2ER98tq',
   firebaseConfig: {
     apiKey: "AIzaSyB_J6iu9ne0LJyUyx1T2H3lOVmya4W1sso",
     authDomain: "web-pwa-c25b2.firebaseapp.com",
