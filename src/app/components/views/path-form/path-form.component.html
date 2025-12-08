@@ -23,7 +23,9 @@
   </ion-list>
   <ion-row>
     <ion-col>
-      <ion-button expand="block" type="submit" color="primary">Guardar</ion-button>
+      <ion-button expand="block" type="submit" color="primary" [disabled]="saving">
+        {{ saving ? 'Guardando...' : 'Guardar' }}
+      </ion-button>
     </ion-col>
     <ion-col>
       <ion-button expand="block" color="medium" (click)="cancel.emit()">Cancelar</ion-button>

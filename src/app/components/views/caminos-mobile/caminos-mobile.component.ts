@@ -60,6 +60,12 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
   // Incident type management
   selectedIncidentType: string = '';
   canSaveIncident = false;
+  isLoadingPaths = false;
+  isSavingPath = false;
+  isStartingRoute = false;
+  isFinishingRoute = false;
+  isLoadingIncidentTypes = false;
+  isSavingIncident = false;
 
   // Autocomplete handlers for PathFormComponent
   onSearchOrigin(event: any) {
@@ -168,8 +174,6 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
         this.mapsLoaded = true;
       })
       .catch(err => console.error('Error loading Google Maps SDK', err));
-
-    this.getIncidentType();
   }
 
   ngOnDestroy() {
@@ -295,6 +299,9 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
   }
 
   async confirmStartPath(path: UserPath) {
+    if (this.isStartingRoute) {
+      return;
+    }
     // Verificar si hay conexión a internet
     if (!navigator.onLine) {
       const offlineAlert = await this.alertController.create({
@@ -392,32 +399,47 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.newPath.name && this.newPath.origin && this.newPath.destination) {
-       this.routeService
-      .createRoute(this.newPath)
-      .subscribe({
-        next: async (resp) => {
-          this.getPaths()
-          this.newPath =  { name: '', origin: '', destination: '' }
-          this.addingPath = false
-        },
-        error: async (err) => {
-          let message = 'Error al iniciar sesión';
-          if (err.error.msg) {
-            message = err.error.msg;
-          } 
-          const alert = await this.alertController.create({
-            header: 'Error de autenticación',
-            message,
-            buttons: ['OK'],
-          });
-          await alert.present();
-        },
-      });
+    if (!this.newPath.name || !this.newPath.origin || !this.newPath.destination) {
+      this.presentAlert('Campos incompletos', 'Completa nombre, origen y destino para guardar el camino.');
+      return;
     }
+
+    this.isSavingPath = true;
+    this.routeService
+    .createRoute(this.newPath)
+    .subscribe({
+      next: async (resp) => {
+        this.isSavingPath = false;
+        await this.presentAlert('Camino guardado', 'Tu camino se guardó correctamente.');
+        this.getPaths()
+        this.newPath =  { name: '', origin: '', destination: '' }
+        this.addingPath = false
+      },
+      error: async (err) => {
+        this.isSavingPath = false;
+        let message = 'No se pudo guardar el camino';
+        if (err.error.msg) {
+          message = err.error.msg;
+        } 
+        const alert = await this.alertController.create({
+          header: 'Error',
+          message,
+          buttons: ['OK'],
+        });
+        await alert.present();
+      },
+    });
   }
 
   endActivePath() {
+    if (this.isFinishingRoute) {
+      return;
+    }
+    this.isFinishingRoute = true;
+    if (!this.runrouterActive) {
+      this.isFinishingRoute = false;
+      return;
+    }
     // Detener transmisión de audio automáticamente
     if (this.isStreaming) {
       this.stopStreaming();
@@ -434,16 +456,17 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
       .finishedRunRoute(this.runrouterActive!.id)
       .subscribe({
         next: async (resp) => {
-          
+            this.isFinishingRoute = false;
             console.log(resp)
           },
           error: async (err) => {
-          let message = 'Error al iniciar sesión';
+          this.isFinishingRoute = false;
+          let message = 'No se pudo finalizar la ruta';
           if (err.error.msg) {
             message = err.error.msg;
           } 
           const alert = await this.alertController.create({
-            header: 'Error de autenticación',
+            header: 'Error',
             message,
             buttons: ['OK'],
           });
@@ -465,10 +488,12 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
   }
 
   private async getPaths(){
+     this.isLoadingPaths = true;
      this.routeService
       .getRoutes()
       .subscribe({
         next: async (resp) => {
+          this.isLoadingPaths = false;
           this.userPaths = []
             resp.data?.forEach((path: Route) => {
             this.userPaths.push({
@@ -483,12 +508,13 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
             console.log(this.userPaths)
           },
           error: async (err) => {
-          let message = 'Error al iniciar sesión';
+          this.isLoadingPaths = false;
+          let message = 'No se pudieron cargar tus caminos';
           if (err.error.msg) {
             message = err.error.msg;
           } 
           const alert = await this.alertController.create({
-            header: 'Error de autenticación',
+            header: 'Error',
             message,
             buttons: ['OK'],
           });
@@ -499,16 +525,17 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
 
   private async initRouterRun(){
      const datauser = localStorage.getItem('walksafe_user');
-     let user
+     let user: any;
      if (datauser){
        user = JSON.parse(datauser)
      } 
     
-this.runRouteService
+    this.isStartingRoute = true;
+    this.runRouteService
       .createRunroute({route_id:this.activePath?.route_id, user_id:user.id})
       .subscribe({
         next: async (resp) => {
-          
+            this.isStartingRoute = false;
             this.runrouterActive = resp.data!
             // Iniciar transmisión de audio automáticamente
             await this.startStreaming();
@@ -516,12 +543,13 @@ this.runRouteService
             this.startLocationPolling();
           },
           error: async (err) => {
-          let message = 'Error al iniciar sesión';
+          this.isStartingRoute = false;
+          let message = 'No se pudo iniciar la ruta';
           if (err.error.msg) {
             message = err.error.msg;
           } 
           const alert = await this.alertController.create({
-            header: 'Error de autenticación',
+            header: 'Error',
             message,
             buttons: ['OK'],
           });
@@ -768,6 +796,14 @@ this.runRouteService
   }
 
   async closeIncident() {
+    if (this.isSavingIncident) {
+      return;
+    }
+    if (!this.canSaveIncident) {
+      await this.presentAlert('Falta información', 'Selecciona un tipo de incidente para guardar.');
+      return;
+    }
+    this.isSavingIncident = true;
     try {
       // Detener grabación de audio y esperar a que se procese
       if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
@@ -831,6 +867,7 @@ this.runRouteService
       this.incidentsService.createIncident(formData).subscribe({
         next: async (resp) => {
           console.log('[Incident] Incidente creado exitosamente:', resp);
+          this.isSavingIncident = false;
           
           // Mostrar confirmación
           const alert = await this.alertController.create({
@@ -845,9 +882,12 @@ this.runRouteService
           this.incidentEvidence = [];
           this.incidentDescription = '';
           this.incidentAudioChunks = [];
+          this.selectedIncidentType = '';
+          this.canSaveIncident = false;
         },
         error: async (err) => {
           console.error('[Incident] Error al crear incidente:', err);
+          this.isSavingIncident = false;
           let message = 'Error al guardar el incidente';
           if (err.error?.msg) {
             message = err.error.msg;
@@ -862,6 +902,7 @@ this.runRouteService
       });
     } catch (error) {
       console.error('[Incident] Error al cerrar:', error);
+      this.isSavingIncident = false;
       const alert = await this.alertController.create({
         header: 'Error',
         message: 'Error procesando el incidente',
@@ -872,10 +913,12 @@ this.runRouteService
   }
 
   private async getIncidentType(){
+    this.isLoadingIncidentTypes = true;
     this.incidentTypeService
       .getIncidentType()
       .subscribe({
         next: async (resp) => {
+          this.isLoadingIncidentTypes = false;
           if(resp.data){
             this.incidentType = resp.data
           }
@@ -884,12 +927,13 @@ this.runRouteService
           }
           },
           error: async (err) => {
-          let message = 'Error al iniciar sesión';
+          this.isLoadingIncidentTypes = false;
+          let message = 'No se pudieron cargar los tipos de incidente';
           if (err.error.msg) {
             message = err.error.msg;
           } 
           const alert = await this.alertController.create({
-            header: 'Error de autenticación',
+            header: 'Error',
             message,
             buttons: ['OK'],
           });
@@ -977,6 +1021,15 @@ this.runRouteService
     const alert = await this.alertController.create({
       header: 'Sin conexión',
       message: message + ' Por favor, verifica tu conexión.',
+      buttons: ['OK']
+    });
+    await alert.present();
+  }
+
+  private async presentAlert(header: string, message: string) {
+    const alert = await this.alertController.create({
+      header,
+      message,
       buttons: ['OK']
     });
     await alert.present();

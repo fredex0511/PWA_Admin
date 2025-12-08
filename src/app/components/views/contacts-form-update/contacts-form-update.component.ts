@@ -13,6 +13,8 @@ import { FormsModule } from '@angular/forms';
 export class ContactsFormUpdateComponent implements OnInit, OnChanges {
   @Input() contact: any = { id: 0, name: '', direction: '', email: '', phone: '' };
   @Input() directionSuggestions: any[] = [];
+  @Input() saving = false;
+  @Input() deleting = false;
   @Output() save = new EventEmitter<any>();
   @Output() cancel = new EventEmitter<void>();
   @Output() searchDirection = new EventEmitter<any>();

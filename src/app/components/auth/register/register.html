@@ -5,6 +5,10 @@
 		<div class="gradient-orb orb-3"></div>
 	</div>
 	<div class="login-container">
+		<div class="loading-overlay" *ngIf="isSubmitting || isVerifying">
+			<div class="spinner"></div>
+			<p>{{ isSubmitting ? 'Enviando...' : 'Verificando...' }}</p>
+		</div>
 		<div class="brand">
 			<div class="logo-wrapper">
 				<div class="logo-icon" aria-label="Logo">
@@ -96,7 +100,7 @@
 			</div>
 
 			<div class="actions">
-				<button type="submit" [disabled]="!registerForm.form.valid || model.password !== model.confirmPassword" class="btn-primary">
+				<button type="submit" [disabled]="!registerForm.form.valid || model.password !== model.confirmPassword || isSubmitting" class="btn-primary">
 					<span class="btn-text">Crear cuenta</span>
 					<div class="btn-glow"></div>
 					<ion-icon name="checkmark-done-outline" class="btn-icon"></ion-icon>
@@ -128,12 +132,12 @@
 			</div>
 
 			<div class="actions">
-				<button type="submit" class="btn-primary">
+				<button type="submit" class="btn-primary" [disabled]="isVerifying">
 					<span class="btn-text">Verificar</span>
 					<div class="btn-glow"></div>
 					<ion-icon name="checkmark-outline" class="btn-icon"></ion-icon>
 				</button>
-				<button type="button" class="btn-secondary" (click)="cancelVerification()">
+				<button type="button" class="btn-secondary" (click)="cancelVerification()" [disabled]="isVerifying">
 					<span class="btn-text">Volver</span>
 					<ion-icon name="arrow-back-outline" class="btn-icon"></ion-icon>
 				</button>

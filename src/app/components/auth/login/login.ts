@@ -28,6 +28,10 @@ export class Login implements OnInit, OnDestroy {
   private recaptchaLoaded = false;
   private recaptchaLoadingPromise: Promise<void> | null = null;
 
+  // UX state
+  isSubmitting = false;
+  isVerifying = false;
+
   private beforeInstallPromptListener: (() => void) | null = null;
   private appInstalledListener: (() => void) | null = null;
 
@@ -86,6 +90,8 @@ export class Login implements OnInit, OnDestroy {
   }
 
   async onSubmit() {
+    if (this.isSubmitting) return;
+    this.isSubmitting = true;
     const data = {
       email: this.model.email,
       password: this.model.password,
@@ -102,6 +108,7 @@ export class Login implements OnInit, OnDestroy {
         buttons: ['OK'],
       });
       await alert.present();
+      this.isSubmitting = false;
       return;
     }
 
@@ -119,6 +126,7 @@ export class Login implements OnInit, OnDestroy {
         buttons: ['OK'],
       });
       await alert.present();
+      this.isSubmitting = false;
       return;
     }
 
@@ -127,6 +135,7 @@ export class Login implements OnInit, OnDestroy {
     try {
       recaptchaToken = await this.getRecaptchaToken('login');
     } catch (error) {
+      this.isSubmitting = false;
       const alert = await this.alertController.create({
         header: 'reCAPTCHA',
         message: 'No se pudo validar el reCAPTCHA. Intenta de nuevo.',
@@ -154,13 +163,15 @@ export class Login implements OnInit, OnDestroy {
                 color: 'success',
               });
               await toast.present();
+              this.isSubmitting = false;
               return;
             }
 
             this.clearForm();
-           
+            this.isSubmitting = false;
           } catch (e) {
             console.error('Error handling login response', e);
+            this.isSubmitting = false;
           }
         },
         error: async (err) => {
@@ -174,11 +185,14 @@ export class Login implements OnInit, OnDestroy {
             buttons: ['OK'],
           });
           await alert.present();
+          this.isSubmitting = false;
         },
       });
   }
 
   async verifyLoginCode() {
+    if (this.isVerifying) return;
+    this.isVerifying = true;
     if (!this.verificationCode || this.verificationCode.trim().length === 0) {
       const alert = await this.alertController.create({
         header: 'Código requerido',
@@ -186,6 +200,7 @@ export class Login implements OnInit, OnDestroy {
         buttons: ['OK'],
       });
       await alert.present();
+      this.isVerifying = false;
       return;
     }
 
@@ -193,12 +208,14 @@ export class Login implements OnInit, OnDestroy {
     try {
       recaptchaToken = await this.getRecaptchaToken('verify_login_code');
     } catch (error) {
+      this.isVerifying = false;
       const alert = await this.alertController.create({
         header: 'reCAPTCHA',
         message: 'No se pudo validar el reCAPTCHA. Intenta de nuevo.',
         buttons: ['OK'],
       });
       await alert.present();
+      this.isVerifying = false;
       return;
     }
 
@@ -212,6 +229,7 @@ export class Login implements OnInit, OnDestroy {
           this.clearForm();
           this.requiresCode = false;
           this.verificationCode = '';
+          this.isVerifying = false;
           
           localStorage.setItem('walksafe_user_logged_in', 'true');
           localStorage.setItem(
@@ -252,6 +270,7 @@ export class Login implements OnInit, OnDestroy {
           }
         } catch (e) {
           console.error('Error handling verification response', e);
+          this.isVerifying = false;
         }
       },
       error: async (err) => {
@@ -265,6 +284,7 @@ export class Login implements OnInit, OnDestroy {
           buttons: ['OK'],
         });
         await alert.present();
+        this.isVerifying = false;
       },
     });
   }

@@ -13,6 +13,7 @@ import { Place } from 'src/app/interfaces/place';
 export class ContactsFormComponent  implements OnInit {
   @Input() contact: any = { name: '', direction: '', email: '' , phone:'' };
   @Input() directionSuggestions: any[] = [];
+  @Input() saving = false;
   @Output() save = new EventEmitter<any>();
   @Output() cancel = new EventEmitter<void>();
   @Output() searchDirection = new EventEmitter<any>();

@@ -51,15 +51,15 @@
   </div>
 
   <div class="form-buttons">
-    <ion-button expand="block" color="danger" (click)="onDelete()">
+    <ion-button expand="block" color="danger" (click)="onDelete()" [disabled]="saving || deleting">
       <ion-icon name="trash-outline" slot="start"></ion-icon>
-      Eliminar
+      {{ deleting ? 'Eliminando...' : 'Eliminar' }}
     </ion-button>
-    <ion-button expand="block" color="primary" (click)="onSave()">
+    <ion-button expand="block" color="primary" (click)="onSave()" [disabled]="saving || deleting">
       <ion-icon name="save-outline" slot="start"></ion-icon>
-      Guardar Cambios
+      {{ saving ? 'Guardando...' : 'Guardar Cambios' }}
     </ion-button>
-    <ion-button expand="block" color="medium" (click)="onCancel()">
+    <ion-button expand="block" color="medium" (click)="onCancel()" [disabled]="saving || deleting">
       Cancelar
     </ion-button>
   </div>

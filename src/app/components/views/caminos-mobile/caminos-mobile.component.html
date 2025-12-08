@@ -13,7 +13,9 @@
             <div class="camino-nombre">{{ path.name }}</div>
             <div class="camino-origen-destino">{{ path.origin }} <span class="flecha">→</span> {{ path.destination }}</div>
           </div>
-          <ion-button fill="outline" size="small" (click)="confirmStartPath(path)">Iniciar</ion-button>
+          <ion-button fill="outline" size="small" (click)="confirmStartPath(path)" [disabled]="isStartingRoute">
+            {{ isStartingRoute ? 'Iniciando...' : 'Iniciar' }}
+          </ion-button>
         </div>
       </div>
 
@@ -22,6 +24,7 @@
           [path]="newPath"
           [originSuggestions]="originSuggestions"
           [destinationSuggestions]="destinationSuggestions"
+          [saving]="isSavingPath"
           (save)="saveNewPath()"
           (cancel)="addingPath = false"
           (searchOrigin)="onSearchOrigin($event)"
@@ -36,7 +39,9 @@
       <div class="active-path-map">
         <div class="active-path-title">{{ activePath.name }}</div>
         <div id="mobileGmap" class="map-container"></div>
-        <ion-button expand="block" color="danger" (click)="endActivePath()">Finalizar viaje</ion-button>
+        <ion-button expand="block" color="danger" (click)="endActivePath()" [disabled]="isFinishingRoute">
+          {{ isFinishingRoute ? 'Finalizando...' : 'Finalizar viaje' }}
+        </ion-button>
         
         <!-- Incident Controls -->
         <div class="incident-controls" *ngIf="!recordingIncident">
@@ -102,9 +107,9 @@
               [(ngModel)]="incidentDescription"
               clearInput>
             </ion-input>
-            <ion-button expand="block" color="success" (click)="closeIncident()" [disabled]="!canSaveIncident">
+            <ion-button expand="block" color="success" (click)="closeIncident()" [disabled]="!canSaveIncident || isSavingIncident">
               <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
-              Guardar Incidente
+              {{ isSavingIncident ? 'Guardando...' : 'Guardar Incidente' }}
             </ion-button>
           </div>
         </div>

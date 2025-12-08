@@ -14,6 +14,7 @@ export class PathFormComponent {
   @Input() path: any = { name: '', origin: '', destination: '' };
   @Input() originSuggestions: any[] = [];
   @Input() destinationSuggestions: any[] = [];
+  @Input() saving = false;
   @Output() save = new EventEmitter<any>();
   @Output() cancel = new EventEmitter<void>();
   @Output() searchOrigin = new EventEmitter<any>();

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, AlertController, ToastController } from '@ionic/angular';
 import { RunroutesService } from 'src/app/services/runroutes';
 import { RouteRun } from 'src/app/interfaces/route-run';
 import { SocketService } from 'src/app/services/socket/socket';
@@ -74,7 +74,12 @@ export class Caminos implements OnInit, OnDestroy {
   private remoteTarget: number | null = null;
 
   //
-  constructor( private runRouteService: RunroutesService ,private socketService: SocketService) { }
+  constructor(
+    private runRouteService: RunroutesService,
+    private socketService: SocketService,
+    private alertController: AlertController,
+    private toastController: ToastController,
+  ) { }
 
   ngOnInit() {
      try { this.token = localStorage.getItem('walksafe_token'); } catch (e) { this.token = null; }
@@ -627,13 +632,23 @@ export class Caminos implements OnInit, OnDestroy {
                           });
               },
               error: async (err) => {
-              let message = 'Error al iniciar sesión';
-              if (err.error.msg) {
+              let message = 'No se pudieron cargar las rutas activas';
+              if (err.error?.msg) {
                 message = err.error.msg;
-              } 
-             
+              }
+              console.error('[RunRoutes] Error cargando rutas activas:', err);
+              await this.showErrorAlert(message);
             },
           });
+  }
+
+  private async showErrorAlert(message: string) {
+    const alert = await this.alertController.create({
+      header: 'Error',
+      message,
+      buttons: ['OK'],
+    });
+    await alert.present();
   }
 
   private async startAutoListen() {

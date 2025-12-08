@@ -22,6 +22,11 @@ export class ContactsMobileComponent  implements OnInit {
   directionSuggestions: any[] = [];
   private autocompleteService: any = null;
   
+  isLoadingContacts = false;
+  isSavingContact = false;
+  isUpdatingContact = false;
+  isDeletingContact = false;
+  
   constructor(
     private alertController: AlertController, 
     private ngZone: NgZone,
@@ -78,13 +83,16 @@ export class ContactsMobileComponent  implements OnInit {
   }
 
   private async getContacts() {
+    this.isLoadingContacts = true;
     this.contactsService.getContacts().subscribe({
       next: async (resp) => {
+        this.isLoadingContacts = false;
         this.userContacts = resp.data || [];
         console.log('Contacts loaded:', this.userContacts);
       },
       error: async (err) => {
-        let message = 'Error al cargar contactos';
+        this.isLoadingContacts = false;
+        let message = 'No se pudieron cargar los contactos';
         if (err.error.msg) {
           message = err.error.msg;
         }
@@ -104,27 +112,34 @@ export class ContactsMobileComponent  implements OnInit {
       return;
     }
 
-    if (this.newContact.name && this.newContact.direction) {
-      this.contactsService.createContact(this.newContact).subscribe({
-        next: async (resp) => {
-          this.getContacts();
-          this.newContact = { name: '', direction:'',email:'',phone:''};
-          this.addingContact = false;
-        },
-        error: async (err) => {
-          let message = 'Error al crear contacto';
-          if (err.error.msg) {
-            message = err.error.msg;
-          }
-          const alert = await this.alertController.create({
-            header: 'Error',
-            message,
-            buttons: ['OK'],
-          });
-          await alert.present();
-        },
-      });
+    if (!this.newContact.name || !this.newContact.direction) {
+      this.presentAlert('Campos incompletos', 'Completa el nombre y dirección del contacto.');
+      return;
     }
+
+    this.isSavingContact = true;
+    this.contactsService.createContact(this.newContact).subscribe({
+      next: async (resp) => {
+        this.isSavingContact = false;
+        await this.presentAlert('Contacto guardado', 'Se guardó el contacto correctamente.');
+        this.getContacts();
+        this.newContact = { name: '', direction:'',email:'',phone:''};
+        this.addingContact = false;
+      },
+      error: async (err) => {
+        this.isSavingContact = false;
+        let message = 'No se pudo guardar el contacto';
+        if (err.error.msg) {
+          message = err.error.msg;
+        }
+        const alert = await this.alertController.create({
+          header: 'Error',
+          message,
+          buttons: ['OK'],
+        });
+        await alert.present();
+      },
+    });
   }
 
   editContact(contact: any) {
@@ -140,40 +155,41 @@ export class ContactsMobileComponent  implements OnInit {
       return;
     }
 
-    if (updatedContact.name && updatedContact.direction) {
-      this.contactsService.updateContact(updatedContact.id, updatedContact).subscribe({
-        next: async (resp) => {
-          console.log('Contacto actualizado:', resp);
-          this.getContacts();
-          this.editingContact = false;
-          this.selectedContact = null;
-          this.directionSuggestions = [];
-          
-          const alert = await this.alertController.create({
-            header: 'Éxito',
-            message: 'Contacto actualizado correctamente',
-            buttons: ['OK'],
-          });
-          await alert.present();
-        },
-        error: async (err) => {
-          let message = 'Error al actualizar contacto';
-          if (err.error?.msg) {
-            message = err.error.msg;
-          }
-          const alert = await this.alertController.create({
-            header: 'Error',
-            message,
-            buttons: ['OK'],
-          });
-          await alert.present();
-        },
-      });
+    if (!updatedContact.name || !updatedContact.direction) {
+      this.presentAlert('Campos incompletos', 'Completa el nombre y dirección del contacto.');
+      return;
     }
+
+    this.isUpdatingContact = true;
+    this.contactsService.updateContact(updatedContact.id, updatedContact).subscribe({
+      next: async (resp) => {
+        this.isUpdatingContact = false;
+        console.log('Contacto actualizado:', resp);
+        await this.presentAlert('Contacto actualizado', 'Los cambios se guardaron correctamente.');
+        this.getContacts();
+        this.editingContact = false;
+        this.selectedContact = null;
+        this.directionSuggestions = [];
+      },
+      error: async (err) => {
+        this.isUpdatingContact = false;
+        let message = 'No se pudo actualizar el contacto';
+        if (err.error?.msg) {
+          message = err.error.msg;
+        }
+        const alert = await this.alertController.create({
+          header: 'Error',
+          message,
+          buttons: ['OK'],
+        });
+        await alert.present();
+      },
+    });
   }
 
   async deleteContact() {
     if (!this.selectedContact) return;
+    if (this.isDeletingContact) return;
 
     // Verificar si hay conexión a internet
     if (!navigator.onLine) {
@@ -193,8 +209,10 @@ export class ContactsMobileComponent  implements OnInit {
           text: 'Eliminar',
           role: 'destructive',
           handler: () => {
+            this.isDeletingContact = true;
             this.contactsService.deleteContact(this.selectedContact.id).subscribe({
               next: async (resp) => {
+                this.isDeletingContact = false;
                 console.log('Contacto eliminado:', resp);
                 
                 // Cerrar el formulario inmediatamente
@@ -208,15 +226,11 @@ export class ContactsMobileComponent  implements OnInit {
                 this.getContacts();
                 
                 // Mostrar alerta de éxito
-                const alert = await this.alertController.create({
-                  header: 'Éxito',
-                  message: 'Contacto eliminado correctamente',
-                  buttons: ['OK'],
-                });
-                await alert.present();
+                await this.presentAlert('Contacto eliminado', 'El contacto se eliminó correctamente.');
               },
               error: async (err) => {
-                let message = 'Error al eliminar contacto';
+                this.isDeletingContact = false;
+                let message = 'No se pudo eliminar el contacto';
                 if (err.error?.msg) {
                   message = err.error.msg;
                 }
@@ -259,6 +273,15 @@ export class ContactsMobileComponent  implements OnInit {
     const alert = await this.alertController.create({
       header: 'Sin conexión',
       message: message + ' Por favor, verifica tu conexión.',
+      buttons: ['OK']
+    });
+    await alert.present();
+  }
+
+  private async presentAlert(header: string, message: string) {
+    const alert = await this.alertController.create({
+      header,
+      message,
       buttons: ['OK']
     });
     await alert.present();

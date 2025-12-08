@@ -25,6 +25,7 @@
         <app-contacts-form
           [contact]="newContact"
           [directionSuggestions]="directionSuggestions"
+          [saving]="isSavingContact"
           (save)="saveNewContact()"
           (cancel)="addingContact = false"
           (searchDirection)="onSearchDirection($event)"
@@ -37,6 +38,8 @@
         <app-contacts-form-update
           [contact]="selectedContact"
           [directionSuggestions]="directionSuggestions"
+          [saving]="isUpdatingContact"
+          [deleting]="isDeletingContact"
           (save)="updateContact($event)"
           (cancel)="cancelEditing()"
           (delete)="deleteContact()"

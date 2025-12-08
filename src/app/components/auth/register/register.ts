@@ -29,6 +29,10 @@ export class Register implements OnInit {
   private recaptchaLoaded = false;
   private recaptchaLoadingPromise: Promise<void> | null = null;
 
+  // UX state
+  isSubmitting = false;
+  isVerifying = false;
+
   constructor(
     private router: Router,
     private platformDetector: PlatformDetectorService,
@@ -44,14 +48,18 @@ export class Register implements OnInit {
   }
 
   async onSubmit() {
+    if (this.isSubmitting) return;
+    this.isSubmitting = true;
     this.isMobile = this.platformDetector.isMobile();
     if (!this.model.name || !this.model.email || !this.model.password) {
       await this.presentAlert('Por favor completa todos los campos.');
+      this.isSubmitting = false;
       return;
     }
 
     if (this.model.password !== this.model.confirmPassword) {
       await this.presentAlert('Las contraseñas no coinciden.');
+      this.isSubmitting = false;
       return;
     }
     const data = {
@@ -71,6 +79,7 @@ export class Register implements OnInit {
         buttons: ['OK'],
       });
       await alert.present();
+      this.isSubmitting = false;
       return;
     }
 
@@ -90,12 +99,15 @@ export class Register implements OnInit {
               color: 'success',
             });
             await toast.present();
+            this.isSubmitting = false;
             return;
           }
 
           this.clearForm();
+          this.isSubmitting = false;
         } catch (e) {
           // Error handling omitted from logs
+          this.isSubmitting = false;
         }
       },
       error: async (err) => {
@@ -125,6 +137,7 @@ export class Register implements OnInit {
         });
 
         await alert.present();
+        this.isSubmitting = false;
       },
     });
   }
@@ -145,6 +158,8 @@ export class Register implements OnInit {
   }
 
   async verifyRegisterCode() {
+    if (this.isVerifying) return;
+    this.isVerifying = true;
     if (!this.verificationCode || this.verificationCode.trim().length === 0) {
       const alert = await this.alertController.create({
         header: 'Código requerido',
@@ -152,6 +167,7 @@ export class Register implements OnInit {
         buttons: ['OK'],
       });
       await alert.present();
+      this.isVerifying = false;
       return;
     }
 
@@ -165,6 +181,7 @@ export class Register implements OnInit {
         buttons: ['OK'],
       });
       await alert.present();
+      this.isVerifying = false;
       return;
     }
 
@@ -178,6 +195,7 @@ export class Register implements OnInit {
           this.clearForm();
           this.requiresCode = false;
           this.verificationCode = '';
+          this.isVerifying = false;
           
           localStorage.setItem('walksafe_user_logged_in', 'true');
           localStorage.setItem(
@@ -215,6 +233,7 @@ export class Register implements OnInit {
           }
         } catch (e) {
           console.error('Error handling verification response', e);
+          this.isVerifying = false;
         }
       },
       error: async (err) => {
@@ -228,6 +247,7 @@ export class Register implements OnInit {
           buttons: ['OK'],
         });
         await alert.present();
+        this.isVerifying = false;
       },
     });
   }

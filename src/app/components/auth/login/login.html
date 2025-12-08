@@ -22,6 +22,10 @@
 	</div>
 
 	<div class="login-container">
+		<div class="loading-overlay" *ngIf="isSubmitting || isVerifying">
+			<div class="spinner"></div>
+			<p>{{ isSubmitting ? 'Enviando...' : 'Verificando...' }}</p>
+		</div>
 		<div class="brand">
 			<div class="logo-wrapper">
 				<div class="logo-icon" aria-label="Logo">
@@ -80,7 +84,7 @@
 			</div>
 
 			<div class="actions">
-				<ion-button type="submit" class="btn-primary" expand="block">
+				<ion-button type="submit" class="btn-primary" expand="block" [disabled]="isSubmitting">
 					<span class="btn-text">Iniciar Sesión</span>
 					<div class="btn-glow"></div>
 					<ion-icon name="arrow-forward-outline" class="btn-icon"></ion-icon>
@@ -113,12 +117,12 @@
 			</div>
 
 			<div class="actions">
-				<ion-button type="submit" class="btn-primary" expand="block">
+				<ion-button type="submit" class="btn-primary" expand="block" [disabled]="isVerifying">
 					<span class="btn-text">Verificar</span>
 					<div class="btn-glow"></div>
 					<ion-icon name="checkmark-outline" class="btn-icon"></ion-icon>
 				</ion-button>
-				<ion-button type="button" class="btn-secondary" expand="block" (click)="cancelVerification()">
+				<ion-button type="button" class="btn-secondary" expand="block" (click)="cancelVerification()" [disabled]="isVerifying">
 					<span class="btn-text">Volver</span>
 					<ion-icon name="arrow-back-outline" class="btn-icon"></ion-icon>
 				</ion-button>
