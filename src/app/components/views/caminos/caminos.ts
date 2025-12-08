@@ -67,11 +67,11 @@ export class Caminos implements OnInit, OnDestroy {
   isListening = false;
   downloadUrl: string | null = null;
   token: string | null = null;
-  targetUserId: string | null = null;
+  targetUserId: number | null = null;
   private listenControlSub: Subscription | null = null;
   private serverErrorSub: Subscription | null = null;
   listenPending = false;
-  private remoteTarget: string | null = null;
+  private remoteTarget: number | null = null;
 
   //
   constructor( private runRouteService: RunroutesService ,private socketService: SocketService) { }
@@ -196,7 +196,15 @@ export class Caminos implements OnInit, OnDestroy {
   }
 
   // Route selection
-  selectRoute(route: ActiveRoute) {
+  selectRoute(route: ActiveRoute): void {
+    this.targetUserId = route.user_id;
+    console.log('route')
+    console.log(route)
+    // Leave previous remote listening if active
+    if (this.selectedRoute && this.selectedRoute.id !== route.id) {
+
+      this.leaveRemote();
+    }
     
     this.clearAllRouteVisuals();
     this.selectedRoute = route;
@@ -205,6 +213,7 @@ export class Caminos implements OnInit, OnDestroy {
       // request directions immediately for street-level route
       try { this.requestDirectionsForRoute(route, true); } catch (e) { console.warn(e); }
     }
+    this.startAutoListen()
   }
 
   trackByRouteId(index: number, route: ActiveRoute): number {
@@ -598,11 +607,9 @@ export class Caminos implements OnInit, OnDestroy {
               this.activeRoutes = []
 
               resp.data?.forEach((route: RouteRun) => {
-                console.log(resp)
-                console.log(route.end_time)
                           if(!route.end_time){
                                     this.activeRoutes.push({
-                                    user_id:route.userId,
+                                    user_id:route.user_id,
                                     id: route.id,
                                     name: route.route?.name ?? 'Sin nombre',
                                     userName: route.user?.name ?? 'Usuario desconocido',
@@ -618,22 +625,6 @@ export class Caminos implements OnInit, OnDestroy {
                           }
                                                  
                           });
-              console.log(resp)
-              
-              // Auto-seleccionar la primera ruta y empezar a escuchar
-              if (this.activeRoutes.length > 0) {
-                const firstRoute = this.activeRoutes[0];
-                this.selectRoute(firstRoute);
-                
-                // Obtener el ID del usuario de la primera ruta para escuchar
-                if (resp.data && resp.data.length > 0) {
-                  this.targetUserId = resp.data[0].user?.id?.toString() ?? null;
-                  if (this.targetUserId) {
-                    // Inicializar socket y empezar a escuchar automáticamente
-                    await this.startAutoListen();
-                  }
-                }
-              }
               },
               error: async (err) => {
               let message = 'Error al iniciar sesión';
@@ -682,6 +673,7 @@ export class Caminos implements OnInit, OnDestroy {
       this.listenPending = false;
     });
 
+    this.socketService.stopListening(this.targetUserId);
     // Solicitar al servidor que se une a la sala
     this.socketService.startListening(this.targetUserId);
         
@@ -767,14 +759,14 @@ export class Caminos implements OnInit, OnDestroy {
     try { const tk = this.token || undefined; this.socketService.init(tk); } catch (e) { console.warn('[Listen] socket init error', e); }
 
     // Determine target user id to listen to
-    try { this.targetUserId = this.selectedRoute?.user_id?.toString() ?? null; }
+    try { this.targetUserId = this.selectedRoute?.user_id ?? null; }
     catch{
       
     }
     if (!this.targetUserId) {
       const provided = window.prompt('Introduce el ID del usuario a escuchar:');
       if (!provided) { console.warn('[Listen] no targetUserId provided'); return; }
-      this.targetUserId = provided;
+      this.targetUserId = parseInt(provided, 10) || null;
       try { localStorage.setItem('listen_target', provided); } catch (e) {}
     }
 
@@ -799,9 +791,11 @@ export class Caminos implements OnInit, OnDestroy {
       console.warn('[Listen] server error', err);
       this.listenPending = false;
     });
-
-    // Now request server to join the room
-    this.socketService.startListening(this.targetUserId);
+    if (this.targetUserId) {
+      this.socketService.stopListening(this.targetUserId);
+      // Now request server to join the room
+      this.socketService.startListening(this.targetUserId);
+    }
   }
 
   leaveRemote() {

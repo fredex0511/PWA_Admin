@@ -46,11 +46,11 @@ export class SocketService {
   }
 
   // Request server to join the listeners room for a target user (admin action)
-  startListening(targetUserId: string) {
+  startListening(targetUserId: number) {
     this.socket?.emit('start-listening', { targetUserId });
   }
 
-  stopListening(targetUserId: string) {
+  stopListening(targetUserId: number) {
     this.socket?.emit('stop-listening', { targetUserId });
   }
 
