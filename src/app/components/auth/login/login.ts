@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { PlatformDetectorService } from '../../../services/platform-detector';
 import { AuthService } from 'src/app/services/auth';
+import { FirebasePushService } from 'src/app/services/firebase-push.service';
+
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -27,7 +29,8 @@ export class Login implements OnInit, OnDestroy {
     private toastController: ToastController,
     private alertController: AlertController,
     private renderer: Renderer2,
-    private authService: AuthService
+    private authService: AuthService,
+    private firebasePushService:FirebasePushService
   ) {}
 
   ngOnInit() {
@@ -143,6 +146,8 @@ export class Login implements OnInit, OnDestroy {
               resp.data!.user.role_id !== 2 &&
               this.isMobile
             ) {
+              const tfcm = localStorage.getItem('fcm_token') || ''
+              this.firebasePushService.sendTokenToBackend(tfcm)
               this.router.navigate(['/dashboard-mobile'], { replaceUrl: true });
             } else {
               const msg = (!this.isMobile && resp.data!.user.role_id === 3) ? 'Para acceder a la app de WalkSafe ingresa desde el movil' : 'No es posible acceder a la app de WalkSafe';

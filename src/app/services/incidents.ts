@@ -23,6 +23,10 @@ export class IncidentsService {
     return this.http.put(this.API_URL + id, data);
   }
 
+  notificationIncident(id: number): Observable<any> {
+    return this.http.post(this.API_URL + id + '/notification', {});
+  }
+
   /**
    * Crear incidente con archivos de evidencia
    * 

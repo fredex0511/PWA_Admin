@@ -65,34 +65,7 @@
       </div>
     </div>
 
-    <!-- Notification Controls -->
-    <div class="notification-controls">
-      <div class="notification-info">
-        <ion-icon name="notifications-outline" class="notification-icon"></ion-icon>
-        <div class="notification-text">
-          <span class="notification-title">Sistema de Alertas</span>
-          <span class="notification-subtitle">Notifica zonas peligrosas a todos los usuarios activos</span>
-        </div>
-      </div>
-      
-      <div class="notification-actions">
-        <ion-button 
-          fill="outline" 
-          size="small" 
-          (click)="previewNotification()"
-          class="preview-btn">
-          <ion-icon name="eye-outline" slot="start"></ion-icon>
-          Vista Previa
-        </ion-button>
-        
-        <ion-button 
-          (click)="sendDangerZoneNotification()" 
-          class="notify-btn"
-          [disabled]="dangerZones.length === 0">
-          <ion-icon name="send-outline" slot="start"></ion-icon>
-          Notificar Zonas Peligrosas
-        </ion-button>
-      </div>
-    </div>
+    
+    
   </div>
 </div>

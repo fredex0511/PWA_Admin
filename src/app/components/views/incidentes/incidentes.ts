@@ -305,4 +305,53 @@ export class Incidentes implements OnInit {
   isVideoEvidence(evidence: any): boolean {
     return evidence.file_type?.startsWith('video/') || false;
   }
+
+  async notifyIncident(incident: Incident) {
+    const alert = await this.alertController.create({
+      header: 'Notificar Incidente',
+      message: `¿Enviar notificación para el incidente #${incident.id}?`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Enviar',
+          handler: () => {
+            this.sendNotification(incident.id);
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  private sendNotification(incidentId: number) {
+    this.incidentsService.notificationIncident(incidentId).subscribe({
+      next: async (resp) => {
+        console.log('[Notification] Respuesta:', resp);
+        const alert = await this.alertController.create({
+          header: 'Éxito',
+          message: 'Notificación enviada correctamente',
+          buttons: ['OK'],
+        });
+        await alert.present();
+      },
+      error: async (err) => {
+        console.error('[Notification] Error:', err);
+        let message = 'Error al enviar la notificación';
+        if (err.error?.msg) {
+          message = err.error.msg;
+        } else if (err.message) {
+          message = err.message;
+        }
+        const alert = await this.alertController.create({
+          header: 'Error',
+          message,
+          buttons: ['OK'],
+        });
+        await alert.present();
+      }
+    });
+  }
 }

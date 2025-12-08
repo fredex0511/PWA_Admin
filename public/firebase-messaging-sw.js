@@ -22,20 +22,36 @@ console.log('[SW] 🔧 Firebase Messaging Service Worker cargado');
 
 // Manejar mensajes en segundo plano
 messaging.onBackgroundMessage((payload) => {
-  console.log('[SW] 📬 Mensaje recibido en segundo plano:', payload);
+  console.log('[SW] ═══════════════════════════════════════════════════════');
+  console.log('[SW] 📬 MENSAJE RECIBIDO EN SEGUNDO PLANO');
+  console.log('[SW] ═══════════════════════════════════════════════════════');
+  console.log('[SW] Payload completo:', JSON.stringify(payload, null, 2));
+  console.log('[SW] Notification:', payload.notification);
+  console.log('[SW] Data:', payload.data);
+  console.log('[SW] ═══════════════════════════════════════════════════════');
 
-  const notificationTitle = payload.notification?.title || 'Nueva notificación';
+  const notificationTitle = payload.notification?.title || payload.data?.title || 'Nueva notificación';
+  const notificationBody = payload.notification?.body || payload.data?.body || '';
   const notificationOptions = {
-    body: payload.notification?.body || '',
-    icon: payload.notification?.icon || '/assets/icon/favicon.png',
+    body: notificationBody,
+    icon: payload.notification?.icon || payload.data?.icon || '/assets/icon/favicon.png',
     badge: '/assets/icon/favicon.png',
     vibrate: [200, 100, 200],
     data: payload.data,
-    tag: 'firebase-notification',
-    requireInteraction: false
+    tag: 'firebase-notification-' + Date.now(),
+    requireInteraction: false,
+    timestamp: Date.now()
   };
 
-  return self.registration.showNotification(notificationTitle, notificationOptions);
+  console.log('[SW] 🔔 Mostrando notificación:', notificationTitle);
+
+  return self.registration.showNotification(notificationTitle, notificationOptions)
+    .then(() => {
+      console.log('[SW] ✅ Notificación mostrada correctamente');
+    })
+    .catch((error) => {
+      console.error('[SW] ❌ Error mostrando notificación:', error);
+    });
 });
 
 // Manejar clics en notificaciones

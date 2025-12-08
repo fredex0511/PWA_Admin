@@ -149,8 +149,12 @@ export class FirebasePushService {
       if (token) {
         this.currentToken = token;
         console.log('[FirebasePush] ✅ Token FCM obtenido exitosamente!');
-        console.log('[FirebasePush] 🔑 Token:', token.substring(0, 50) + '...');
-        localStorage.setItem('tokenFcm',token)
+        console.log('[FirebasePush] 🔑 Token COMPLETO:', token);
+        console.log('[FirebasePush] 📋 Token (primeros 50 chars):', token.substring(0, 50) + '...');
+        console.log('[FirebasePush] 📤 Guarda este token en tu backend para enviar notificaciones');
+        localStorage.setItem('fcm_token', token);
+        
+        
         return token;
       } else {
         console.error('[FirebasePush] ❌ No se pudo obtener el token FCM');
@@ -376,10 +380,84 @@ export class FirebasePushService {
   }
 
   /**
+   * Envía el token FCM al backend
+   */
+   async sendTokenToBackend(token: string): Promise<void> {
+    try {
+      console.log('[FirebasePush] 📤 Enviando token FCM al backend...');
+      
+      const userString = localStorage.getItem('walksafe_user');
+      const user = userString ? JSON.parse(userString) : null;
+      
+      if (!user || !user.id) {
+        console.error('[FirebasePush] ❌ Usuario no encontrado en localStorage');
+        console.warn('[FirebasePush] 💡 El usuario debe estar autenticado para registrar el token');
+        return;
+      }
+      
+      // Endpoint para guardar el token FCM
+      const apiUrl = `${environment.api}users/${user.id}/fcm-token`;
+      
+      const payload = {
+        fcmToken: token,
+        deviceType: 'web',
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent
+      };
+
+      console.log('[FirebasePush] 📋 Payload a enviar:', payload);
+      
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('walksafe_token') || ''}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const responseData = await response.json();
+      
+      if (response.ok) {
+        console.log('[FirebasePush] ✅ Token enviado al backend correctamente');
+        console.log('[FirebasePush] Respuesta:', responseData);
+        localStorage.setItem('fcm_token', token);
+      } else {
+        console.warn('[FirebasePush] ⚠️ Error al enviar token al backend:', response.status);
+        console.warn('[FirebasePush] Respuesta:', responseData);
+        console.warn('[FirebasePush] 💡 Verifica que tu endpoint esté configurado en:', apiUrl);
+        console.warn('[FirebasePush] 💡 Endpoint esperado: POST /api/v1/users/:id/fcm-token');
+      }
+    } catch (error) {
+      console.error('[FirebasePush] ❌ Error enviando token al backend:', error);
+      console.error('[FirebasePush] 💡 Asegúrate de que:');
+      console.error('[FirebasePush]   - El backend está corriendo');
+      console.error('[FirebasePush]   - El endpoint está disponible');
+      console.error('[FirebasePush]   - El CORS está configurado correctamente');
+    }
+  }
+
+  /**
    * Obtiene el token actual
    */
   getCurrentToken(): string | null {
     return this.currentToken;
+  }
+
+  /**
+   * Imprime el token completo en consola para copiar
+   */
+  printFullToken(): void {
+    if (this.currentToken) {
+      console.log('═══════════════════════════════════════════════════════');
+      console.log('📋 TOKEN FCM COMPLETO (Copia esto para tu backend):');
+      console.log('═══════════════════════════════════════════════════════');
+      console.log(this.currentToken);
+      console.log('═══════════════════════════════════════════════════════');
+      console.log('💾 También guardado en localStorage como: fcm_token');
+    } else {
+      console.warn('⚠️ No hay token disponible');
+    }
   }
 
   /**
@@ -390,12 +468,114 @@ export class FirebasePushService {
       firebaseInitialized: !!this.app,
       messagingInitialized: !!this.messaging,
       hasToken: !!this.currentToken,
-      token: this.currentToken?.substring(0, 30) + '...',
+      tokenPreview: this.currentToken?.substring(0, 30) + '...',
+      tokenFull: this.currentToken,
       notificationPermission: ('Notification' in window) ? Notification.permission : 'not-supported',
       serviceWorkerSupported: 'serviceWorker' in navigator,
       notificationSupported: 'Notification' in window,
       timestamp: new Date().toISOString()
     };
+  }
+
+  /**
+   * Test: Envía una notificación de prueba local
+   */
+  async testLocalNotification(): Promise<void> {
+    console.log('[FirebasePush] 🧪 Enviando notificación de prueba local...');
+    
+    if (Notification.permission !== 'granted') {
+      console.error('[FirebasePush] ❌ Permisos no concedidos');
+      return;
+    }
+
+    const testPayload = {
+      notification: {
+        title: '🧪 Prueba Local',
+        body: 'Esta es una notificación de prueba generada localmente',
+        icon: '/assets/icon/favicon.png'
+      },
+      data: {
+        test: true,
+        timestamp: Date.now()
+      }
+    };
+
+    // Simular recepción de mensaje
+    this.showNotification(
+      testPayload.notification.title,
+      testPayload.notification.body,
+      testPayload.notification.icon,
+      testPayload.data
+    );
+
+    this.showInAppNotification(testPayload);
+
+    console.log('[FirebasePush] ✅ Notificación de prueba enviada');
+  }
+
+  /**
+   * Instrucciones para enviar notificaciones desde el backend
+   */
+  printBackendInstructions(): void {
+    console.log('═══════════════════════════════════════════════════════');
+    console.log('📚 CÓMO ENVIAR NOTIFICACIONES DESDE EL BACKEND');
+    console.log('═══════════════════════════════════════════════════════');
+    console.log('');
+    console.log('1️⃣ OBTÉN EL TOKEN FCM DEL USUARIO:');
+    console.log('   Token:', this.currentToken);
+    console.log('');
+    console.log('2️⃣ CONFIGURACIÓN EN FIREBASE CONSOLE:');
+    console.log('   - Ve a: https://console.firebase.google.com');
+    console.log('   - Proyecto: web-pwa-c25b2');
+    console.log('   - Cloud Messaging > Habilitar API');
+    console.log('   - Configuración del proyecto > Cuentas de servicio');
+    console.log('   - Generar nueva clave privada (JSON)');
+    console.log('');
+    console.log('3️⃣ ENDPOINT DE TU BACKEND:');
+    console.log('   POST ' + environment.api + 'notifications/send');
+    console.log('');
+    console.log('4️⃣ EJEMPLO DE REQUEST DESDE BACKEND (Node.js):');
+    console.log(`
+const admin = require('firebase-admin');
+const serviceAccount = require('./serviceAccountKey.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+const message = {
+  notification: {
+    title: 'Título',
+    body: 'Mensaje'
+  },
+  data: {
+    url: '/dashboard',
+    customData: 'valor'
+  },
+  token: '${this.currentToken}'
+};
+
+admin.messaging().send(message)
+  .then((response) => {
+    console.log('Notificación enviada:', response);
+  })
+  .catch((error) => {
+    console.log('Error:', error);
+  });
+    `);
+    console.log('');
+    console.log('5️⃣ VERIFICAR EN EL BACKEND:');
+    console.log('   ✅ Firebase Admin SDK instalado');
+    console.log('   ✅ Service Account Key configurado');
+    console.log('   ✅ Cloud Messaging API habilitada');
+    console.log('   ✅ Token del usuario guardado en BD');
+    console.log('');
+    console.log('6️⃣ DEBUGGING:');
+    console.log('   - Verifica logs del backend');
+    console.log('   - Revisa respuesta de Firebase Admin SDK');
+    console.log('   - Comprueba que el token sea válido');
+    console.log('   - Verifica que Cloud Messaging esté activo');
+    console.log('═══════════════════════════════════════════════════════');
   }
 
   /**
@@ -439,6 +619,16 @@ export class FirebasePushService {
     console.log('[FirebasePush] 📊 DIAGNÓSTICO:');
     console.log(this.getDiagnostics());
     console.log('[FirebasePush] ═══════════════════════════════════════');
+    console.log('');
+    console.log('[FirebasePush] 💡 COMANDOS ÚTILES EN CONSOLA:');
+    console.log('[FirebasePush] - Ver token completo: window.firebasePush.printFullToken()');
+    console.log('[FirebasePush] - Ver instrucciones backend: window.firebasePush.printBackendInstructions()');
+    console.log('[FirebasePush] - Test notificación local: window.firebasePush.testLocalNotification()');
+    console.log('[FirebasePush] - Ver diagnóstico: window.firebasePush.getDiagnostics()');
+    console.log('');
+
+    // Exponer servicio globalmente para debugging
+    (window as any).firebasePush = this;
 
     return true;
   }
