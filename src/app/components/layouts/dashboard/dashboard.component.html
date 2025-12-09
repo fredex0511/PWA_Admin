@@ -9,6 +9,9 @@
             <ion-button fill="clear" size="small" (click)="toggleMenu()" aria-label="Toggle menu">
               <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
             </ion-button>
+            <ion-button fill="clear" size="small" (click)="checkUpdate()" aria-label="Check for updates" title="Verificar actualizaciones">
+              <ion-icon slot="icon-only" name="refresh"></ion-icon>
+            </ion-button>
           </div>
         </ion-list-header>
         @for (p of appPages; track p; let i = $index) {

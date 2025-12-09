@@ -4,16 +4,20 @@ import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { downloadOutline, shieldCheckmark, mailOutline, keyOutline, arrowForwardOutline } from 'ionicons/icons';
 import { FirebasePushService } from './services/firebase-push.service';
+import { UpdateService } from './services/update.service';
 
 @Component({
   selector: 'app-root',
   template: `<ion-app><ion-router-outlet></ion-router-outlet></ion-app>`,
   standalone: true,
   imports: [IonApp, IonRouterOutlet],
-  providers: [FirebasePushService],
+  providers: [FirebasePushService, UpdateService],
 })
 export class AppComponent implements OnInit {
-  constructor(private firebasePush: FirebasePushService) {
+  constructor(
+    private firebasePush: FirebasePushService,
+    private updateService: UpdateService
+  ) {
     addIcons({
       'download-outline': downloadOutline,
       'shield-checkmark': shieldCheckmark,
@@ -27,6 +31,9 @@ export class AppComponent implements OnInit {
     console.log('[AppComponent] ═══════════════════════════════════════');
     console.log('[AppComponent] 🚀 Aplicación iniciada');
     console.log('[AppComponent] ═══════════════════════════════════════');
+
+    // Inicializar actualización automática de PWA
+    this.updateService.initializeUpdateCheck();
 
     // Inicializar Firebase Push Notifications
     await this.initializeFirebasePush();

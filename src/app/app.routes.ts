@@ -22,8 +22,7 @@ export const routes: Routes = [
   {
     path: 'dashboard-mobile',
     component: DashboardMobileComponent,
-    canActivate: [roleGuard],
-    data: { roles: [3] },
+    
     children: [
       {
         path: '',
@@ -48,8 +47,6 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     component: DashboardComponent,
-    canActivate: [roleGuard],
-    data: { roles: [1, 2] },
     children: [
       {
         path: '',
