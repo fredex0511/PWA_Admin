@@ -17,12 +17,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const handleRedirect = () => {
     localStorage.clear();
-    router.navigate(['/'], { replaceUrl: true }).catch(() => {});
+    router.navigate(['/login'], { replaceUrl: true }).catch(() => {});
   };
 
   return next(req).pipe(
     tap((event) => {
-      if (event instanceof HttpResponse && event.status === 301) {
+      if (event instanceof HttpResponse && event.status === 401) {
         handleRedirect();
       }
     }),
