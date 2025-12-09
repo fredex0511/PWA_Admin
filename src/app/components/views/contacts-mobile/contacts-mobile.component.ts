@@ -93,8 +93,12 @@ export class ContactsMobileComponent  implements OnInit {
       error: async (err) => {
         this.isLoadingContacts = false;
         let message = 'No se pudieron cargar los contactos';
-        if (err.error.msg) {
+        if (err.error?.msg) {
           message = err.error.msg;
+        } else if (err.status === 504) {
+          message = 'El servidor no responde. Por favor, intenta más tarde.';
+        } else if (err.status === 0) {
+          message = 'No se pudo conectar al servidor. Verifica tu conexión.';
         }
         const alert = await this.alertController.create({
           header: 'Error',
@@ -129,8 +133,12 @@ export class ContactsMobileComponent  implements OnInit {
       error: async (err) => {
         this.isSavingContact = false;
         let message = 'No se pudo guardar el contacto';
-        if (err.error.msg) {
+        if (err.error?.msg) {
           message = err.error.msg;
+        } else if (err.status === 504) {
+          message = 'El servidor no responde. Por favor, intenta más tarde.';
+        } else if (err.status === 0) {
+          message = 'No se pudo conectar al servidor. Verifica tu conexión.';
         }
         const alert = await this.alertController.create({
           header: 'Error',

@@ -418,8 +418,12 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
       error: async (err) => {
         this.isSavingPath = false;
         let message = 'No se pudo guardar el camino';
-        if (err.error.msg) {
+        if (err.error?.msg) {
           message = err.error.msg;
+        } else if (err.status === 504) {
+          message = 'El servidor no responde. Por favor, intenta más tarde.';
+        } else if (err.status === 0) {
+          message = 'No se pudo conectar al servidor. Verifica tu conexión.';
         } 
         const alert = await this.alertController.create({
           header: 'Error',
@@ -462,8 +466,12 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
           error: async (err) => {
           this.isFinishingRoute = false;
           let message = 'No se pudo finalizar la ruta';
-          if (err.error.msg) {
+          if (err.error?.msg) {
             message = err.error.msg;
+          } else if (err.status === 504) {
+            message = 'El servidor no responde. Por favor, intenta más tarde.';
+          } else if (err.status === 0) {
+            message = 'No se pudo conectar al servidor. Verifica tu conexión.';
           } 
           const alert = await this.alertController.create({
             header: 'Error',
@@ -510,8 +518,12 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
           error: async (err) => {
           this.isLoadingPaths = false;
           let message = 'No se pudieron cargar tus caminos';
-          if (err.error.msg) {
+          if (err.error?.msg) {
             message = err.error.msg;
+          } else if (err.status === 504) {
+            message = 'El servidor no responde. Por favor, intenta más tarde.';
+          } else if (err.status === 0) {
+            message = 'No se pudo conectar al servidor. Verifica tu conexión.';
           } 
           const alert = await this.alertController.create({
             header: 'Error',
@@ -545,8 +557,12 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
           error: async (err) => {
           this.isStartingRoute = false;
           let message = 'No se pudo iniciar la ruta';
-          if (err.error.msg) {
+          if (err.error?.msg) {
             message = err.error.msg;
+          } else if (err.status === 504) {
+            message = 'El servidor no responde. Por favor, intenta más tarde.';
+          } else if (err.status === 0) {
+            message = 'No se pudo conectar al servidor. Verifica tu conexión.';
           } 
           const alert = await this.alertController.create({
             header: 'Error',
@@ -730,19 +746,58 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
 
   async capturePhoto() {
     try {
+      console.log('[Camera] Iniciando captura de foto...');
+      
       // Usar input de file con capture para acceso directo a cámara
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
       input.capture = 'environment';
-      input.onchange = (event: any) => {
-        const file = event.target.files[0];
-        if (file) {
-          this.addEvidence(file, 'image');
-          console.log('[Camera] Foto capturada desde cámara nativa');
-        }
+      
+      input.onchange = async (event: any) => {
+        await this.ngZone.run(async () => {
+          try {
+            const file = event.target.files?.[0];
+            if (!file) {
+              console.warn('[Camera] No se seleccionó archivo');
+              return;
+            }
+
+            console.log('[Camera] Archivo capturado:', file.name, 'Tipo:', file.type, 'Tamaño:', (file.size / 1024).toFixed(2), 'KB');
+
+            // Validar tipo de archivo
+            if (!file.type.startsWith('image/')) {
+              throw new Error('El archivo no es una imagen');
+            }
+
+            // Agregar evidencia con manejo de errores
+            await this.addEvidence(file, 'image');
+            console.log('[Camera] ✓ Foto agregada exitosamente');
+            
+          } catch (error) {
+            console.error('[Camera] Error procesando foto:', error);
+            const alert = await this.alertController.create({
+              header: 'Error',
+              message: error instanceof Error ? error.message : 'No se pudo procesar la foto',
+              buttons: ['OK']
+            });
+            await alert.present();
+          }
+        });
       };
+
+      input.onerror = async (error) => {
+        console.error('[Camera] Error en input:', error);
+        const alert = await this.alertController.create({
+          header: 'Error',
+          message: 'Error al abrir la cámara',
+          buttons: ['OK']
+        });
+        await alert.present();
+      };
+
       input.click();
+      
     } catch (error) {
       console.error('[Camera] Error:', error);
       const errorAlert = await this.alertController.create({
@@ -761,33 +816,112 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
     }
   }
 
-  onFileSelected(event: any) {
+  async onFileSelected(event: any) {
     const files = event.target.files;
-    if (files) {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const type = file.type.startsWith('image/') ? 'image' : 
-                    file.type.startsWith('video/') ? 'video' : 
-                    file.type.startsWith('audio/') ? 'audio' : 'file';
-        this.addEvidence(file, type);
+    if (!files || files.length === 0) {
+      console.warn('[Files] No se seleccionaron archivos');
+      return;
+    }
+
+    console.log('[Files] Procesando', files.length, 'archivo(s)...');
+    
+    let successCount = 0;
+    let errorCount = 0;
+
+    // Procesar archivos secuencialmente para evitar problemas con Promise.allSettled
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const type = file.type.startsWith('image/') ? 'image' : 
+                  file.type.startsWith('video/') ? 'video' : 
+                  file.type.startsWith('audio/') ? 'audio' : 'file';
+      
+      try {
+        await this.addEvidence(file, type);
+        successCount++;
+      } catch (error) {
+        errorCount++;
+        console.error(`[Files] Error en archivo ${i + 1}:`, error);
       }
+    }
+
+    console.log(`[Files] Procesamiento completo: ${successCount} exitosos, ${errorCount} errores`);
+
+    if (errorCount > 0) {
+      const alert = await this.alertController.create({
+        header: 'Advertencia',
+        message: `${errorCount} archivo(s) no se pudieron procesar. Se agregaron ${successCount} correctamente.`,
+        buttons: ['OK']
+      });
+      await alert.present();
     }
   }
 
-  private addEvidence(file: File, type: string) {
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      this.ngZone.run(() => {
-        this.incidentEvidence.push({
-          file,
-          type,
-          url: e.target.result,
-          name: file.name
-        });
-        console.log('[Evidence] Agregada evidencia:', file.name);
-      });
-    };
-    reader.readAsDataURL(file);
+  private addEvidence(file: File, type: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        // Validar archivo
+        if (!file || file.size === 0) {
+          console.error('[Evidence] Archivo inválido o vacío');
+          reject(new Error('Archivo inválido'));
+          return;
+        }
+
+        // Validar tamaño máximo (10MB)
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+          console.error('[Evidence] Archivo demasiado grande:', (file.size / 1024 / 1024).toFixed(2), 'MB');
+          reject(new Error('Archivo mayor a 10MB'));
+          return;
+        }
+
+        const reader = new FileReader();
+        
+        // Timeout de 30 segundos
+        const timeout = setTimeout(() => {
+          reader.abort();
+          console.error('[Evidence] Timeout leyendo archivo');
+          reject(new Error('Timeout procesando archivo'));
+        }, 30000);
+
+        reader.onload = (e: any) => {
+          clearTimeout(timeout);
+          this.ngZone.run(() => {
+            try {
+              this.incidentEvidence.push({
+                file,
+                type,
+                url: e.target.result,
+                name: file.name
+              });
+              console.log('[Evidence] ✓ Evidencia agregada:', file.name, 'Tipo:', type, 'Tamaño:', (file.size / 1024).toFixed(2), 'KB');
+              resolve();
+            } catch (error) {
+              console.error('[Evidence] Error en ngZone.run:', error);
+              reject(error);
+            }
+          });
+        };
+
+        reader.onerror = (error) => {
+          clearTimeout(timeout);
+          console.error('[Evidence] Error FileReader:', error);
+          reject(new Error('Error leyendo archivo'));
+        };
+
+        reader.onabort = () => {
+          clearTimeout(timeout);
+          console.error('[Evidence] Lectura abortada');
+          reject(new Error('Lectura abortada'));
+        };
+
+        // Iniciar lectura
+        reader.readAsDataURL(file);
+        
+      } catch (error) {
+        console.error('[Evidence] Error en addEvidence:', error);
+        reject(error);
+      }
+    });
   }
 
   removeEvidence(index: number) {
@@ -830,8 +964,17 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
         console.log('[Audio] Audio del incidente agregado:', { size: audioBlob.size, type: audioBlob.type });
       }
 
-      console.log('[Incident] Enviando incidente con evidencia:', this.incidentEvidence);
+      console.log('[Incident] Preparando incidente...');
+      console.log('[Incident] Total evidencias:', this.incidentEvidence.length);
       console.log('[Incident] Descripción:', this.incidentDescription);
+      
+      // Validar evidencias antes de continuar
+      const validEvidences = this.incidentEvidence.filter(e => e.file && e.file.size > 0);
+      console.log('[Incident] Evidencias válidas:', validEvidences.length, 'de', this.incidentEvidence.length);
+      
+      if (validEvidences.length === 0) {
+        console.warn('[Incident] ⚠️  No hay evidencias válidas para enviar');
+      }
       
       const formData = new FormData();
       
@@ -855,15 +998,51 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
 
       // Agregar todos los archivos de evidencia con la clave "files"
       // El backend recibirá esto en req.files o req.file.files
-      this.incidentEvidence.forEach((evidence) => {
-        // Añadir con nombre de archivo preservado (ej: photo.jpg, audio.webm, video.mp4)
-        formData.append('files', evidence.file, evidence.file.name);
-        console.log(`[FormData] Agregado archivo: ${evidence.file.name} (${evidence.type})`);
+      let filesAdded = 0;
+      for (let i = 0; i < this.incidentEvidence.length; i++) {
+        const evidence = this.incidentEvidence[i];
+        try {
+          // Validar que el archivo existe y tiene contenido válido
+          if (!evidence.file || evidence.file.size === 0) {
+            console.warn(`[FormData] Archivo ${i + 1} omitido: sin contenido`);
+            continue;
+          }
+
+          // Generar nombre de archivo seguro con timestamp
+          const timestamp = Date.now();
+          const extension = evidence.file.name.split('.').pop() || 'bin';
+          const safeName = `${evidence.type}_${timestamp}_${i}.${extension}`;
+          
+          // Crear nuevo File con nombre seguro
+          const safeFile = new File([evidence.file], safeName, { type: evidence.file.type });
+          
+          formData.append('files', safeFile, safeName);
+          filesAdded++;
+          console.log(`[FormData] ✓ Archivo ${i + 1}/${this.incidentEvidence.length}:`, safeName, `(${evidence.type})`, 'Tamaño:', (evidence.file.size / 1024).toFixed(2), 'KB');
+        } catch (error) {
+          console.error(`[FormData] ✗ Error agregando archivo ${i + 1}:`, error);
+        }
+      }
+
+      if (filesAdded === 0 && this.incidentEvidence.length > 0) {
+        console.error('[Incident] Ningún archivo se pudo agregar al FormData');
+        throw new Error('No se pudieron procesar los archivos de evidencia');
+      }
+
+      console.log('[Incident] FormData preparado con', filesAdded, 'de', this.incidentEvidence.length, 'archivo(s)');
+      
+      // Log detallado del FormData para debugging
+      console.log('[Incident] Datos del FormData:');
+      formData.forEach((value, key) => {
+        if (value instanceof File) {
+          console.log(`  - ${key}: ${value.name} (${value.type}, ${(value.size / 1024).toFixed(2)} KB)`);
+        } else {
+          console.log(`  - ${key}: ${value}`);
+        }
       });
 
-      console.log('[Incident] FormData preparado con', this.incidentEvidence.length, 'archivo(s)');
-
       // Enviar al servidor
+      console.log('[Incident] 📤 Enviando incidente al servidor...');
       this.incidentsService.createIncident(formData).subscribe({
         next: async (resp) => {
           console.log('[Incident] Incidente creado exitosamente:', resp);
@@ -886,12 +1065,28 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
           this.canSaveIncident = false;
         },
         error: async (err) => {
-          console.error('[Incident] Error al crear incidente:', err);
+          console.error('[Incident] ✗ Error al crear incidente:', err);
+          console.error('[Incident] Error status:', err.status);
+          console.error('[Incident] Error message:', err.message);
+          console.error('[Incident] Error error:', err.error);
+          
           this.isSavingIncident = false;
+          
           let message = 'Error al guardar el incidente';
-          if (err.error?.msg) {
+          
+          // Manejo específico de errores
+          if (err.status === 0) {
+            message = 'No se pudo conectar al servidor. Verifica tu conexión a internet.';
+          } else if (err.status === 413) {
+            message = 'Los archivos son demasiado grandes. Reduce el tamaño de las imágenes.';
+          } else if (err.status === 400) {
+            message = err.error?.msg || 'Datos inválidos. Verifica la información del incidente.';
+          } else if (err.status === 500) {
+            message = 'Error del servidor. Intenta nuevamente más tarde.';
+          } else if (err.error?.msg) {
             message = err.error.msg;
           }
+          
           const errorAlert = await this.alertController.create({
             header: 'Error',
             message,
@@ -929,8 +1124,12 @@ export class CaminosMobileComponent implements OnInit, OnDestroy {
           error: async (err) => {
           this.isLoadingIncidentTypes = false;
           let message = 'No se pudieron cargar los tipos de incidente';
-          if (err.error.msg) {
+          if (err.error?.msg) {
             message = err.error.msg;
+          } else if (err.status === 504) {
+            message = 'El servidor no responde. Por favor, intenta más tarde.';
+          } else if (err.status === 0) {
+            message = 'No se pudo conectar al servidor. Verifica tu conexión.';
           } 
           const alert = await this.alertController.create({
             header: 'Error',

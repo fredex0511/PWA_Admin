@@ -18,91 +18,30 @@
     {
       "name": "assets",
       "installMode": "lazy",
-      "updateMode": "prefetch",
+      "updateMode": "lazy",
       "resources": {
         "files": [
           "/assets/**",
-          "/manifest.webmanifest",
-          "/*.png",
-          "/*.svg",
-          "/*.webp",
-          "/*.jpg",
-          "/*.woff2"
+          "/manifest.webmanifest"
+        ],
+        "urls": [
+          "https://fonts.googleapis.com/**",
+          "https://fonts.gstatic.com/**"
         ]
       }
     }
   ],
   "dataGroups": [
     {
-      "name": "routes-api",
+      "name": "api-dynamic",
       "urls": [
-        "https://vkf1xfcn-3333.usw3.devtunnels.ms/api/v1/routes/**"
+        "https://jesusarandarodriguez.site/api/v1/**"
       ],
       "cacheConfig": {
         "strategy": "freshness",
-        "maxSize": 60,
+        "maxSize": 500,
         "maxAge": "7d",
-        "timeout": "8s"
-      }
-    },
-    {
-      "name": "contacts-api",
-      "urls": [
-        "https://vkf1xfcn-3333.usw3.devtunnels.ms/api/v1/contacts/**"
-      ],
-      "cacheConfig": {
-        "strategy": "freshness",
-        "maxSize": 60,
-        "maxAge": "7d",
-        "timeout": "8s"
-      }
-    },
-    {
-      "name": "incidents-api",
-      "urls": [
-        "https://vkf1xfcn-3333.usw3.devtunnels.ms/api/v1/incidents/**"
-      ],
-      "cacheConfig": {
-        "strategy": "freshness",
-        "maxSize": 60,
-        "maxAge": "7d",
-        "timeout": "8s"
-      }
-    },
-    {
-      "name": "evidences-api",
-      "urls": [
-        "https://vkf1xfcn-3333.usw3.devtunnels.ms/api/v1/evidences/**"
-      ],
-      "cacheConfig": {
-        "strategy": "freshness",
-        "maxSize": 100,
-        "maxAge": "30d",
         "timeout": "10s"
-      }
-    },
-    {
-      "name": "runroutes-api",
-      "urls": [
-        "https://vkf1xfcn-3333.usw3.devtunnels.ms/api/v1/runroutes/**"
-      ],
-      "cacheConfig": {
-        "strategy": "freshness",
-        "maxSize": 60,
-        "maxAge": "7d",
-        "timeout": "8s"
-      }
-    },
-    {
-      "name": "incident-types-api",
-      "urls": [
-        "https://vkf1xfcn-3333.usw3.devtunnels.ms/api/v1/incidenttype/**"
-      ],
-      "cacheConfig": {
-        "strategy": "performance",
-        "maxSize": 20,
-        "maxAge": "30d",
-        "timeout": "5s"
       }
     }
   ]
