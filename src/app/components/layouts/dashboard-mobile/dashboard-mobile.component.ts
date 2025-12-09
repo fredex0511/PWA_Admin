@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { UpdateService } from '../../../services/update.service';
 
 @Component({
   selector: 'app-dashboard-mobile',
@@ -13,8 +12,7 @@ import { UpdateService } from '../../../services/update.service';
 })
 export class DashboardMobileComponent {
     constructor(
-    private router: Router,
-    private updateService: UpdateService
+    private router: Router
   ) {}
   gotoroutes() {
     this.router
@@ -36,10 +34,6 @@ export class DashboardMobileComponent {
       .catch((/* err */) => {
         // Navigation failed (ignored)
       });
-  }
-
-  checkUpdate() {
-    this.updateService.manualUpdate();
   }
 }
 

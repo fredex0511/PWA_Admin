@@ -4,7 +4,6 @@ import { IonSplitPane, IonMenu, IonContent, IonList, IonListHeader, IonMenuToggl
 import { addIcons } from 'ionicons';
 import * as icons from 'ionicons/icons';
 import { CommonModule } from '@angular/common';
-import { UpdateService } from '../../../services/update.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -27,12 +26,8 @@ export class DashboardComponent {
     this.collapsed = !this.collapsed;
   }
 
-  constructor(private updateService: UpdateService) {
+  constructor() {
     // Register all icons at once. Note: importing everything increases bundle size.
     addIcons(icons as any);
-  }
-
-  checkUpdate() {
-    this.updateService.manualUpdate();
   }
 }
