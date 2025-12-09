@@ -1,9 +1,13 @@
 <ion-header>
   <ion-toolbar color="primary">
     <ion-title>WalkSafe</ion-title>
-    <ion-button (click)="gotocontacs()">Contactos</ion-button>
-    <ion-button  (click)="gotohistory()">Historial</ion-button>
-    <ion-button  (click)="gotoroutes()">Rutas</ion-button>
+  </ion-toolbar>
+  <ion-toolbar color="primary">
+    <ion-segment>
+      <ion-button (click)="gotocontacs()" expand="block">Contactos</ion-button>
+      <ion-button (click)="gotohistory()" expand="block">Historial</ion-button>
+      <ion-button (click)="gotoroutes()" expand="block">Rutas</ion-button>
+    </ion-segment>
   </ion-toolbar>
 </ion-header>
 
