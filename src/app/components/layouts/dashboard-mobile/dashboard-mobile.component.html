@@ -3,9 +3,11 @@
     <ion-title>WalkSafe</ion-title>
   </ion-toolbar>
   <ion-toolbar color="primary">
-    <ion-button (click)="gotocontacs()" fill="clear" size="small">Contactos</ion-button>
-    <ion-button (click)="gotohistory()" fill="clear" size="small">Historial</ion-button>
-    <ion-button (click)="gotoroutes()" fill="clear" size="small">Rutas</ion-button>
+    <div style="display: flex; width: 100%; justify-content: space-around; padding: 0;">
+      <ion-button (click)="gotocontacs()" fill="clear" size="small">Contactos</ion-button>
+      <ion-button (click)="gotohistory()" fill="clear" size="small">Historial</ion-button>
+      <ion-button (click)="gotoroutes()" fill="clear" size="small">Rutas</ion-button>
+    </div>
   </ion-toolbar>
 </ion-header>
 
