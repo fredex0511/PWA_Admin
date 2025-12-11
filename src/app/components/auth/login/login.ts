@@ -5,8 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { PlatformDetectorService } from '../../../services/platform-detector';
 import { AuthService } from 'src/app/services/auth';
-import { FirebasePushService } from 'src/app/services/firebase-push.service';
 import { environment } from 'src/environments/environment';
+import { WebPushService } from 'src/app/services/webpush.service';
 
 @Component({
   selector: 'app-login',
@@ -42,7 +42,7 @@ export class Login implements OnInit, OnDestroy {
     private alertController: AlertController,
     private renderer: Renderer2,
     private authService: AuthService,
-    private firebasePushService:FirebasePushService
+    private webPushService: WebPushService
   ) {}
 
   ngOnInit() {
@@ -246,6 +246,9 @@ export class Login implements OnInit, OnDestroy {
             'walksafe_user',
             JSON.stringify(resp.data!.user || {})
           );
+
+          // Solicitar/registrar push solo después de código verificado
+          await this.webPushService.initialize();
           
           if (
             (resp.data!.user.role_id === 2 || resp.data!.user.role_id === 1) &&
@@ -257,8 +260,6 @@ export class Login implements OnInit, OnDestroy {
             resp.data!.user.role_id !== 2 &&
             this.isMobile
           ) {
-            const tfcm = localStorage.getItem('fcm_token') || ''
-            this.firebasePushService.sendTokenToBackend(tfcm)
             this.router.navigate(['/dashboard-mobile'], { replaceUrl: true });
           } else {
             const alert = await this.alertController.create({

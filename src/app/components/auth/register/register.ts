@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from 'src/app/services/auth';
 import { PlatformDetectorService } from '../../../services/platform-detector';
 import { environment } from 'src/environments/environment';
+import { WebPushService } from 'src/app/services/webpush.service';
 
 @Component({
   selector: 'app-register',
@@ -39,7 +40,8 @@ export class Register implements OnInit {
     private toastController: ToastController,
     private alertController: AlertController,
     private renderer: Renderer2,
-    private authService: AuthService
+    private authService: AuthService,
+    private webPushService: WebPushService
   ) {}
 
   ngOnInit() {
@@ -213,6 +215,9 @@ export class Register implements OnInit {
             'walksafe_user',
             JSON.stringify(resp.data!.user || {})
           );
+
+          // Pedir permiso de notificaciones solo tras verificar código exitoso
+          await this.webPushService.initialize();
           
           if (this.isMobile && resp.data!.user?.role_id === 3) {
             const toast = await this.toastController.create({

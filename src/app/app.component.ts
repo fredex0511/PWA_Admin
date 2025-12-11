@@ -3,20 +3,20 @@ import { Component, OnInit } from '@angular/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { downloadOutline, shieldCheckmark, mailOutline, keyOutline, arrowForwardOutline } from 'ionicons/icons';
-import { FirebasePushService } from './services/firebase-push.service';
 import { UpdateService } from './services/update.service';
+import { WebPushService } from './services/webpush.service';
 
 @Component({
   selector: 'app-root',
   template: `<ion-app><ion-router-outlet></ion-router-outlet></ion-app>`,
   standalone: true,
   imports: [IonApp, IonRouterOutlet],
-  providers: [FirebasePushService, UpdateService],
+  providers: [UpdateService],
 })
 export class AppComponent implements OnInit {
   constructor(
-    private firebasePush: FirebasePushService,
-    private updateService: UpdateService
+    private updateService: UpdateService,
+    private webPushService: WebPushService
   ) {
     addIcons({
       'download-outline': downloadOutline,
@@ -35,24 +35,7 @@ export class AppComponent implements OnInit {
     // Inicializar actualización automática de PWA
     this.updateService.initializeUpdateCheck();
 
-    // Inicializar Firebase Push Notifications
-    await this.initializeFirebasePush();
-  }
-
-  private async initializeFirebasePush(): Promise<void> {
-    try {
-      console.log('[AppComponent] 🔔 Inicializando notificaciones push...');
-      
-      const success = await this.firebasePush.initialize();
-
-      if (success) {
-        console.log('[AppComponent] ✅ Notificaciones push configuradas correctamente');
-      } else {
-        console.warn('[AppComponent] ⚠️ No se pudieron configurar las notificaciones push');
-        console.warn('[AppComponent] 💡 Revisa los logs anteriores para más detalles');
-      }
-    } catch (error) {
-      console.error('[AppComponent] ❌ Error inicializando notificaciones push:', error);
-    }
+    // Inicializar notificaciones push (Web Push)
+    await this.webPushService.initialize();
   }
 }

@@ -40,7 +40,7 @@
                 "output": "/"
               },
               {
-                "glob": "firebase-messaging-sw.js",
+                "glob": "push-notification-sw.js",
                 "input": "public",
                 "output": "/"
               }
